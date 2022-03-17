@@ -4,6 +4,8 @@ import winreg
 import os, os.path
 import pytest
 
+# e.g. 
+# pytest --pdb --component Enigma_D --notify
 
 fileDirectory = os.path.dirname(os.path.abspath(__file__)) 
 sys.path.insert(0, os.path.dirname(fileDirectory))

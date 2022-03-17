@@ -35,8 +35,8 @@ def test_wiring(pytestconfig):
      cls.ringstellung = alphabet[pos]
     encoded = str()
     for c in alphabet:
-     encoded += cls.encode(c, True)
-    if isinstance(cls, MzEnigma.Walze):
+     encoded += cls.encode(c, True, componentOnly = True)
+    if '_ringstellung' in vars(cls):
      expectedWiring = cls.wiring[pos:] + cls.wiring[:pos]
     else:
      expectedWiring = cls.wiring

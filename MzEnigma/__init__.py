@@ -6,7 +6,7 @@ Versions:
  1.0.0      first version
 """
 __author__ = "Reinhard Maerz"
-__date__ = "2022-03-14"
+__date__ = "2022-03-17"
 __version__ = "1.0.0"
 
 import os

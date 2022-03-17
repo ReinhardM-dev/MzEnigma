@@ -3,6 +3,7 @@ from typing import Optional, Callable, Dict, List, Tuple, Set
 import pytest
 
 import itertools
+import os, os.path
 import re
 import random
 import string
@@ -42,19 +43,20 @@ def runTuringAttack(enigma : MzEnigma.enigma, name : str, msg : Optional[str] = 
  enigmaSetting = MzEnigma.Tagesschluessel(enigma, 
                                                             umkehrwalze = enigma.umkehrwalzen[0], 
                                                             walzen = enigma.walzen[:enigma.numberOfWalzen], 
-                                                            tagesWalzenStellungen = 'RHM', 
+                                                            tagesWalzenStellungen = ''.join(random.sample(enigma.alphabet, enigma.numberOfWalzen)), 
                                                             steckerbrett = MzEnigma.Steckerbrett('Mark 3', 'ARDCEFTIHXPSVQOKNBLGUMYJWZ'), 
                                                             zusatzwalze = zusatzwalze, 
                                                             notify = None)
  # RVDEAHEJX
  sRange = MzEnigma.TagesschluesselRange(enigma, 
-  walzenList = enigmaSetting.walzen, 
+  walzenList = [enigmaSetting.walzen], 
   tagesWalzenStellungenList = [enigmaSetting.tagesWalzenStellungen], 
   umkehrwalzenList = [enigmaSetting.umkehrwalze], 
   zusatzwalzenList = [enigmaSetting.zusatzwalze], 
   spruchScoring = None, 
   notify = None) 
  sRange.notify = notify
+ print(enigmaSetting)
  eMsg = enigmaSetting.encode(msg)
  steckerbrettWiring = enigmaSetting.steckerbrett.wiringToDict(False)
  print('text = {}'.format(msg))
@@ -64,15 +66,24 @@ def runTuringAttack(enigma : MzEnigma.enigma, name : str, msg : Optional[str] = 
  for tagesschluessel, tws2wiringList in validCandidates:
   print('-----------------\n{}'.format(tagesschluessel))
   for tws, wirings in tws2wiringList:
-   print(' tws = {} ++++++++++++++++++++++++'.format(tws))
+   print(' - tws = {} ++++++++++++++++++++++++'.format(tws))
    for wiring in wirings:
-    difference = 'none'
+    missingKeys = list()
+    improperKeys = list()
+    difference = 'correct'
     for src, tgt in steckerbrettWiring.items():
-     if src not in wiring:
-      difference = 'missing key'
-     else:
-      assert wiring[src] != tgt, 'improper key {} found ({} expected)'.format(wiring[src], tgt)
-    print(' + {}: {}'.format(difference, wiring))
+     if src not in wiring and difference == 'correct':
+      missingKeys.append(src)
+      difference = 'missing keys'
+     elif src in wiring and wiring[src] != tgt:
+      improperKeys.append(src)
+      difference = 'improper keys'
+    if difference == 'missing keys':
+     print('  + {}: {}'.format(difference, sorted(missingKeys)))
+    elif difference == 'correct':
+     print('  + {}'.format(difference))
+    elif difference == 'improper keys' and notify:
+     print('  + {}: {}'.format(difference, sorted(improperKeys)))
 
 def test_turingAttack(pytestconfig):
  global defaultMsg, defaultCrib
@@ -94,7 +105,8 @@ def test_turingAttack(pytestconfig):
 def runGilloglyAttack(enigma : MzEnigma.Enigma, name : str, msg : str, phase2Method : str = 'Mz', notify : Optional[Callable[[str], None]] = None):
  assert enigma.steckerbrett is not None
  print('Starting engine {}'.format(name))
- enigmaSetting = MzEnigma.Tagesschluessel(enigma, notify = notify)
+ enigmaSetting = MzEnigma.Tagesschluessel(enigma, notify = None)
+ print(enigmaSetting)
  spruchScoring = MzEnigma.SpruchScoring('german', normalize = True, logarithmic = False) 
  eMsg = enigmaSetting.encode(msg)
  print('text = {}'.format(msg))
@@ -102,12 +114,13 @@ def runGilloglyAttack(enigma : MzEnigma.Enigma, name : str, msg : str, phase2Met
  print('frequencyDict:')
  printFrequencyDict(enigmaSetting, spruchScoring, msg)
  sRange = MzEnigma.TagesschluesselRange(enigma, 
-  walzenList = enigmaSetting.walzen, 
+  walzenList = [enigmaSetting.walzen], 
   tagesWalzenStellungenList = None, 
   umkehrwalzenList = [enigmaSetting.umkehrwalze], 
   zusatzwalzenList = [enigmaSetting.zusatzwalze], 
   spruchScoring = spruchScoring, 
-  notify = notify) 
+  notify = None) 
+ sRange.notify = notify
  phase1EnigmaSetting = sRange.gilloglyAttackPhase1(eMsg)
  phase1Msg = 'phase 1 analysis of settings - Umkehrwalze, Walzen, Zusatzwalze, and Tageswalzenstellungen -'
  if phase1EnigmaSetting != enigmaSetting:
@@ -153,29 +166,49 @@ def test_gilloglyAttack(pytestconfig):
                            phase2Method = phase2Method,  
                            notify = pytest.helpers.notify(pytestconfig))
 
-def runRejewskiAttack(enigma : MzEnigma.Enigma, name : str, notify : Optional[Callable[[str], None]] = None):
+def runRejewskiAttack(enigma : MzEnigma.Enigma, name : str, usePickleFile : bool = True, notify : Optional[Callable[[str], None]] = None):
  assert enigma.steckerbrett is None
  print('Starting engine {}'.format(name))
- enigmaSetting = MzEnigma.Tagesschluessel(enigma, notify = notify)
- msg = itertools.permutations(enigma.alphabet, len(enigma.numberOfWalzenStellungen()))
+ enigmaSetting = MzEnigma.Tagesschluessel(enigma, 
+   walzen = enigma.walzen[:enigma.numberOfWalzen], 
+   umkehrwalze = enigma.umkehrwalzen[0], notify = None)
+ print(enigmaSetting)
+ msg = ''.join(random.sample(enigma.alphabet, enigma.numberOfWalzen))
  eMsg = enigmaSetting.encode(msg +  msg)
+ print('spruchschluessel = {}'.format(msg))
  print('encryptedText = {}'.format(eMsg))
  sRange = MzEnigma.TagesschluesselRange(enigma, 
-  walzenList = enigmaSetting.walzen, 
+  walzenList = [enigmaSetting.walzen], 
   tagesWalzenStellungenList = None, 
   umkehrwalzenList = [enigmaSetting.umkehrwalze], 
   zusatzwalzenList = [enigmaSetting.zusatzwalze], 
   spruchScoring = None, 
-  notify = notify) 
- catalog = sRange.createRejewskiCatalog()
+  notify = None) 
+ sRange.notify = notify
+ pickleFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rejewskiCatalog.pickle')
+ if usePickleFile and os.path.exists(pickleFile):
+  catalog = sRange.loadRejewskiCatalog(pickleFile)
+ else:
+  if os.path.exists(pickleFile):
+   os.remove(pickleFile)
+  catalog = sRange.createRejewskiCatalog(pickleFile)
  validCandidates = sRange.rejewskiAttack(catalog, eMsg)
- assert enigmaSetting in validCandidates
- assert validCandidates[enigmaSetting] == msg
+ print('Computation finished, {} candidates found'.format(len(validCandidates)))
+ for setting, spruchschluessel in validCandidates:
+  found = list()
+  if setting == enigmaSetting:
+   found.append('setting correct')
+  if spruchschluessel == msg:
+   found.append('spruchschluessel correct')
+  found = ', '.join(found)
+  if len(found) == 0:
+   found = 'improper'
+  print('tagesWalzenStellungen = {}, spruchschluessel = {} -> {} '.format(setting.tagesWalzenStellungen, spruchschluessel, found))
 
 def test_rejewskiAttack(pytestconfig):
  pattern = pytestconfig.getoption('component')
  if pattern:
-  print('\n--- test_gilloglyAttack ---\n')
+  print('\n--- test_rejewskiAttack ---\n')
   for name, enigma in vars(MzEnigma).items():
    if isinstance(enigma, MzEnigma.Enigma) and re.fullmatch(pattern, name) and enigma.steckerbrett is None:
     runRejewskiAttack(enigma, name, notify = pytest.helpers.notify(pytestconfig))
@@ -188,22 +221,21 @@ if __name__ == "__main__":
  # msg = 'DIEENIGMAISTEINEROTORSCHLUESSELMASCHINE'
  msg = "OBERKOMMANDODERWEHRMACHTOBERKOMMANDODERWEHRMACHTOBERKOMMANDODERWEHRMACHT"
  #          'XLNFCBYXCWGAOWURKQJDUBNRQWWXVIKIMPLYQAGFCVUEUZCINVQYSAWLIFEXAAKSPETAJXIY'
- enigma = MzEnigma.Enigma_M3
- name = 'Enigma_M3'
  print('plaintext = {}'.format(msg))
- if True:
+ if False:
   # crib = 'NIGMAISTEINEROTORSCHLUESSELMASCHINEDIE'
   crib = msg[:12]
+  enigma = MzEnigma.Enigma_D
+  name = 'Enigma_D'
+  runRejewskiAttack(enigma, name, notify = None)
+ elif False:
+  # crib = 'NIGMAISTEINEROTORSCHLUESSELMASCHINEDIE'
+  crib = msg[:12]
+  enigma = MzEnigma.Enigma_M3
+  name = 'Enigma_M3'
   runTuringAttack(enigma, name, msg, crib = crib, notify = None)
  else:
   phase2Method = 'Mz'
-  runGilloglyAttack(enigma, name, msg, phase2Method = phase2Method, notify = None)
- if False:
-  oldScore = 0
-  for l in range(3, len(actMsg)):
-   msg = ''.join(random.choices(string.ascii_uppercase, k=l))
-   T = spruchScoring.setSATemperature(msg)
-   score = spruchScoring.newNgramScore(msg, oldScore)
-   if score > oldScore:
-    print('{}, {}, {} -> {}'.format(l, T, oldScore, score))
-    oldScore = score
+  enigma = MzEnigma.Enigma_M3
+  name = 'Enigma_M3'
+  runGilloglyAttack(enigma, name, msg, phase2Method = phase2Method, notify = print)

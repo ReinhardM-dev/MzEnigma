@@ -413,11 +413,11 @@ class Tagesschluessel(object):
    for cs in self.encode((second + shift) * c):
     ecList[-1].append(cs)
   for ns in range(shift):
-   doubletsList = list
+   doubletsList = list()
    for n, c in enumerate(self.alphabet):
     doubletsList.append(ecList[n][first+ns] + ecList[n][second+ns])
    allDoubletsList.append(doubletsList)
-  if all:
+  if not all:
    return doubletsList
   return allDoubletsList
 

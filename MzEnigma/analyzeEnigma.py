@@ -5,10 +5,9 @@ import copy
 import random
 import itertools
 import hashlib
-import pdb
-from pprint import pprint
+import pickle
+import os.path
 
-import numpy
 import networkx
 
 import MzEnigma
@@ -44,11 +43,16 @@ class TagesschluesselRange(object):
   else:
    self.steckerbrett = None
   assert walzenList is not None and len(walzenList) > 0, '{}: WalzenRange is required'.format(self.__class__.__name__)
+  if walzenList is None or len(walzenList) == 0:
+   walzenList = itertools.permutations(self.enigma.walzenList, self.enigma.numberOfWalzen)
   self.walzenList = list()
-  for _walze in walzenList:
-   walze = copy.deepcopy(_walze)
-   walze.notify = self.notify
-   self.walzenList.append(walze)
+  for _walzen in walzenList:
+   walzen = list()
+   for _walze in _walzen:
+    walze = copy.deepcopy(_walze)
+    walze.notify = self.notify
+    walzen.append(_walze)
+   self.walzenList.append(walzen)
   if tagesWalzenStellungenList:
    for tagesWalzenStellungen in tagesWalzenStellungenList:
     assert len(tagesWalzenStellungen) == enigma.numberOfWalzen, '{}: Walzenstellung, number of characters must match the number of walzen'.format(self.__class__.__name__)
@@ -63,7 +67,9 @@ class TagesschluesselRange(object):
     walze = copy.deepcopy(_walze)
     walze.notify = self.notify
     self.zusatzwalzenList.append(walze)
-  assert umkehrwalzenList is not None, '{}: umkehrwalzenList is required'.format(self.__class__.__name__)
+  assert umkehrwalzenList is not None or len(self.enigma.umkehrwalzen) == 1, '{}: umkehrwalzenList is required'.format(self.__class__.__name__)
+  if umkehrwalzenList is None:
+   umkehrwalzenList = [ self.enigma.umkehrwalzen ]
   self.umkehrwalzenList = list()
   for _walze in umkehrwalzenList:
    walze = copy.deepcopy(_walze)
@@ -72,58 +78,89 @@ class TagesschluesselRange(object):
   self.spruchScoring = spruchScoring 
  
  @classmethod
- def rejewskiAttack(cls, catalog : Dict[MzEnigma.Tagesschluessel, List[List[str]]], encodedSpruchSchluessel : str) -> Dict[MzEnigma.Tagesschluessel, str]:
+ def rejewskiAttack(cls, catalog : List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]], encodedSpruchSchluessel : str) -> List[Tuple[MzEnigma.Tagesschluessel, str]]:
   """Find candidate spruchschluessels for an encrypted SpruchwalzenStellung
 
-:returns: dict of tagesschluessel with the unencoded spruchSchluessel
+:returns: list of tagesschluessel with the unencoded spruchSchluessel
   """
-  assert len(catalog) > 0, '{}.rejewskiAttack: empty catalog detected'.format(cls.__class__.__name__)  
-  firstKey, firstItem = catalog.items()[0]
-  assert isinstance(firstKey, MzEnigma.Tagesschluesse), '{}.rejewskiAttack: improper catalog key, MzEnigma.Tagesschluessel espected'.format(cls.__class__.__name__)
-  assert isinstance(firstItem, list), '{}.rejewskiAttack: improper catalog item, list espected'.format(cls.__class__.__name__)  
-  assert 2 * len(firstItem) == len(encodedSpruchSchluessel), '{}.rejewskiAttack: number of positions in catalog item ({}) != number of positions in spruchschluessel ({})'.format(cls.__class__.__name__, len(firstItem), len(encodedSpruchSchluessel) // 2)  
-  assert isinstance(firstItem[0], list), '{}.rejewskiAttack: improper catalog item.item, list espected'.format(cls.__class__.__name__)  
+  cls.checkRejewskiCatalog(catalog)
+  firstKey, firstItem = catalog[0]
   alphabet = firstKey.alphabet
-  assert len(firstItem[0]) == len(alphabet), '{}.rejewskiAttack: number of positions in catalog item.item({}) != number of characters ({})'.format(cls.__class__.__name__, len(firstItem[0]), len(alphabet))  
-  
+
   encodedPosKeys = list()
-  for first, second in zip(encodedSpruchSchluessel[len(firstItem):], encodedSpruchSchluessel[:len(firstItem)]):
+  for first, second in zip(encodedSpruchSchluessel[:len(firstItem)], encodedSpruchSchluessel[len(firstItem):]):
    encodedPosKeys.append(first+second)
    
-  validCandidates = dict()
+  validCandidates = list()
   for tagesschluessel, listOfDoublets in catalog:
    unencodedPosKeys = list()
    for pos, doublets in enumerate(listOfDoublets):
     if encodedPosKeys[pos] not in doublets:
      break
     unencodedPosKeys.append(alphabet[doublets.index(encodedPosKeys[pos])])
-   if len(unencodedPosKeys) > 0:
-    validCandidates[tagesschluessel] = ''.join(unencodedPosKeys)
+   if len(unencodedPosKeys) == len(listOfDoublets):
+    validCandidates.append((tagesschluessel,''.join(unencodedPosKeys)))
    
   return validCandidates
 
- def createRejewskiCatalog(self) -> Dict[MzEnigma.Tagesschluessel, List[List[str]]]:
+ def createRejewskiCatalog(self, pickleFile : Optional[str] = None) -> List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]]:
   """Build up a catalog of spruchschluessels  
 
 :returns: a list of doublets for every tagesschluessel
   """
   assert self.enigma.steckerbrett is None, '{}.createRejewskiCatalog: engines with steckerbrett are not supported'.format(self.__class__.__name__)
-  gTagesschluessel = MzEnigma.Tagesschluessel(enigma = self.enigma, steckerbrett = self.steckerbrett, blank = self.blank, notify = self.notify)
-  rejewskiDict = dict()
+  if pickleFile is not None:
+   pickleFile = os.path.normpath(pickleFile)
+   assert not os.path.exists(pickleFile), '{}.createRejewskiCatalog: pickle file {} is already exising'.format(self.__class__.__name__, pickleFile)
+  gTagesschluessel = MzEnigma.Tagesschluessel(enigma = self.enigma, notify = None)
+  rejewskiList = list()
   for umkehrwalze in self.umkehrwalzenList:
-   for walzen in itertools.permutations(self.walzenList, self.enigma.numberOfWalzen):
-    for tagesWalzenStellungenTuple in self.tagesWalzenStellungenList:
+   if self.notify:
+    self.notify('{}.createRejewskiCatalog: - examining umkehrwalze = {}'.format(self.__class__.__name__, umkehrwalze.name))
+   for walzen in self.walzenList:
+    if self.notify:
+     nameList = list()
+     for walze in walzen:
+      nameList.append(walze.name)
+     self.notify('{}.createRejewskiCatalog:  - examining walzen = {}'.format(self.__class__.__name__, nameList))
+    for tagesWalzenStellungenID, tagesWalzenStellungenTuple in enumerate(self.tagesWalzenStellungenList):
      tagesWalzenStellungen = ''.join(tagesWalzenStellungenTuple)
+     if self.notify:
+      self.notify('{}.createRejewskiCatalog:   + examining tagesWalzenStellungen = {} ({} of {})'.format(self.__class__.__name__, tagesWalzenStellungen, tagesWalzenStellungenID,  len(self.tagesWalzenStellungenList)))
      if len(self.zusatzwalzenList) > 0:
       for zusatzwalze in self.zusatzwalzenList:
+       if self.notify:
+        self.notify('{}.createRejewskiCatalog:  - examining zusatzwalze = {}'.format(self.__class__.__name__, zusatzwalze.name))
        tagesschluessel = MzEnigma.Tagesschluessel.changeWalzen(
                                   gTagesschluessel, walzen = walzen, tagesWalzenStellungen = tagesWalzenStellungen, umkehrwalze = umkehrwalze, zusatzwalze = zusatzwalze)
-       rejewskiDict[tagesschluessel] = tagesschluessel.findDoublets(first = 0, second = self.enigma.numberOfWalzen, all = True)
+       rejewskiList.append((tagesschluessel, tagesschluessel.findDoublets(first = 0, second = self.enigma.numberOfWalzen, all = True)))
      else:
-      tagesschluessel = MzEnigma.Tagesschluessel.changeWalzen( 
+      tagesschluessel = MzEnigma.Tagesschluessel.changeWalzen(
                                  gTagesschluessel, walzen = walzen, tagesWalzenStellungen = tagesWalzenStellungen, umkehrwalze = umkehrwalze)
-      rejewskiDict[tagesschluessel] = tagesschluessel.findDoublets(first = 0, second = self.enigma.numberOfWalzen, all = True)
-  return rejewskiDict
+      rejewskiList.append((tagesschluessel, tagesschluessel.findDoublets(first = 0, second = self.enigma.numberOfWalzen, all = True)))
+  if pickleFile is not None:
+   pickle.dump( rejewskiList, open( pickleFile, "wb" ) )
+  return rejewskiList
+  
+ @classmethod
+ def checkRejewskiCatalog(cls, catalog : List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]], expectedSpruchschluesselLength : Optional[int] = None) -> None:
+  assert len(catalog) > 0, '{}.checkRejewskiCatalog: empty catalog detected'.format(cls.__class__.__name__)  
+  firstKey, firstItem = catalog[0]
+  assert isinstance(firstKey, MzEnigma.Tagesschluessel), '{}.checkRejewskiCatalog: improper catalog key, MzEnigma.Tagesschluessel espected'.format(cls.__class__.__name__)
+  assert isinstance(firstItem, list), '{}.checkRejewskiCatalogk: improper catalog item, list espected'.format(cls.__class__.__name__)  
+  alphabet = firstKey.alphabet
+  if expectedSpruchschluesselLength is not None:
+   assert len(firstItem) == expectedSpruchschluesselLength, '{}.checkRejewskiCatalog: number of positions in catalog item ({}) != number of positions in spruchschluessel ({})'.format(cls.__class__.__name__, len(firstItem[0]), expectedSpruchschluesselLength)  
+  assert len(firstItem[0]) == len(alphabet), '{}.checkRejewskiCatalog: number of positions in catalog item.item({}) != number of characters ({})'.format(cls.__class__.__name__, len(firstItem), len(alphabet))  
+  assert isinstance(firstItem[0][0], str), '{}.checkRejewskiCatalog: improper catalog item.item, str espected'.format(cls.__class__.__name__)  
+
+ @classmethod
+ def loadRejewskiCatalog(cls, pickleFile : str) -> List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]]:
+  pickleFile = os.path.normpath(pickleFile)
+  assert os.path.isfile(pickleFile), '{}.loadRejewskiCatalog: pickle file {} is not or not a file'.format(cls.__class__.__name__, pickleFile)
+  rejewskiList = pickle.load( open( pickleFile, "rb" ) )
+  cls.checkRejewskiCatalog(rejewskiList)
+  return rejewskiList
 
  def turingAttack(self, encodedSpruch : str = '', crib : str = '', startingPosition : int = 0) -> List[Tuple[MzEnigma.Tagesschluessel, List[Tuple[str, str]]]]:
   """Turing attack to derive settings for Umkehrwalze, Walzen, Zusatzwalze, Tageswalzenstellungen and several settings of the Steckerbrett
@@ -149,8 +186,6 @@ An engine with Steckerbrett is required.
      for _, posDict in graph[id][tgtID].items():
       pos = posDict['pos']
       tgtV = ecList[vID][pos]
-      # if self.notify:
-      #  self.notify('{}.turingAttack: id = {}, v = {} -> pos = {} -> tgtID = {}, tgtV = {}'.format(self.__class__.__name__, id, v, pos, tgtID, tgtV))
       if not connectBus(tgtID, tgtV):
        return False
     return True
@@ -167,7 +202,7 @@ An engine with Steckerbrett is required.
     knownWirings = list()
     tagesschluessel.tagesWalzenStellungen = ''.join(tagesWalzenStellungenTuple)
     if self.notify:
-     self.notify('{}.turingAttack: examining tagesWalzenStellungen = {} ({} of {})'.format(self.__class__.__name__, tagesschluessel.tagesWalzenStellungen, tagesWalzenStellungenID,  len(self.tagesWalzenStellungenList)))
+     self.notify('{}.turingAttack:  - examining tagesWalzenStellungen = {} ({} of {})'.format(self.__class__.__name__, tagesschluessel.tagesWalzenStellungen, tagesWalzenStellungenID,  len(self.tagesWalzenStellungenList)))
     ecList = list()
     for nc, c in enumerate(self.enigma.alphabet):
      ecList.append(list())
@@ -176,7 +211,7 @@ An engine with Steckerbrett is required.
     
     for v in self.enigma.alphabet:
      if self.notify:
-       self.notify('{}.turingAttack: examining {}'.format(self.__class__.__name__, v))
+       self.notify('{}.turingAttack:  + examining "{}"'.format(self.__class__.__name__, v))
      buses = len(self.enigma.alphabet) * [ None ]
      if connectBus(firstBus, v):
       knownWiring = dict()
@@ -190,8 +225,8 @@ An engine with Steckerbrett is required.
         knownWiring[value] = key
       knownWirings.append(knownWiring)
       if self.notify:
-       self.notify('{}.turingAttack: wiring {} found'.format(self.__class__.__name__, knownWiring))
-     candidateSteckerbrettList.append((tagesschluessel.tagesWalzenStellungen, knownWirings))
+       self.notify('{}.turingAttack:   wiring {} found'.format(self.__class__.__name__, knownWiring))
+    candidateSteckerbrettList.append((tagesschluessel.tagesWalzenStellungen, knownWirings))
    tagesschluessel.tagesWalzenStellungen = oldTagesWalzenStellungen
    return candidateSteckerbrettList
 
@@ -220,9 +255,18 @@ An engine with Steckerbrett is required.
                                                                  blank = self.blank, notify = None)
   validCandidates = list()
   for umkehrwalze in self.umkehrwalzenList:
-   for walzen in itertools.permutations(self.walzenList, self.enigma.numberOfWalzen):
+   if self.notify:
+    self.notify('{}.turingAttack: - examining umkehrwalze = {}'.format(self.__class__.__name__, umkehrwalze.name))
+   for walzen in self.walzenList:
+    if self.notify:
+     nameList = list()
+     for walze in walzen:
+      nameList.append(walze.name)
+     self.notify('{}.turingAttack:  - examining walzen = {}'.format(self.__class__.__name__, nameList))
     if len(self.zusatzwalzenList) > 0:
      for zusatzwalze in self.zusatzwalzenList:
+      if self.notify:
+       self.notify('{}.turingAttack:  - examining zusatzwalze = {}'.format(self.__class__.__name__, zusatzwalze.name))
       tagesschluessel = MzEnigma.Tagesschluessel.changeWalzen(
                                  gTagesschluessel, walzen = walzen, tagesWalzenStellungen = gTagesschluessel.tagesWalzenStellungen, 
                                  umkehrwalze = umkehrwalze, zusatzwalze = zusatzwalze)
@@ -247,25 +291,34 @@ An engine with Steckerbrett is required.
    nonlocal encodedSpruch, bestScore, tagesschluessel, bestTagesschluessel, lastDecryptedSpruch
    decryptedSpruch = tagesschluessel.decode(encodedSpruch)
    actScore = MzEnigma.SpruchScoring.indexOfCoincidence(decryptedSpruch)
-   decryptedSpruchMD5 = hashlib.md5(str(decryptedSpruch).encode("utf-8")).hexdigest()
+   # decryptedSpruchMD5 = hashlib.md5(str(decryptedSpruch).encode("utf-8")).hexdigest()
    if self.notify:
-    self.notify('{}.gilloglyAttackPhase1: score = {}(best: {})\n md5 = {}\n{}\n'.format(
-      self.__class__.__name__, actScore, bestScore, decryptedSpruchMD5, tagesschluessel))
+    self.notify('{}.gilloglyAttackPhase1: + examining tagesWalzenStellungen = {}'.format(self.__class__.__name__, tagesschluessel.tagesWalzenStellungen))
+    self.notify('{} score = {:.3f} (best: {:.3f})'.format(60*' ', actScore, bestScore))
    lastDecryptedSpruch = decryptedSpruch
    if actScore > bestScore:
     bestScore = actScore
     bestTagesschluessel = copy.deepcopy(tagesschluessel)
    
   lastDecryptedSpruch = ''
-  gTagesschluessel = MzEnigma.Tagesschluessel(enigma = self.enigma, steckerbrett = self.steckerbrett, blank = self.blank, notify = self.notify)
+  gTagesschluessel = MzEnigma.Tagesschluessel(enigma = self.enigma, steckerbrett = self.steckerbrett, blank = self.blank, notify = None)
   bestTagesschluessel = None
   bestScore = 0
   for umkehrwalze in self.umkehrwalzenList:
-   for walzen in itertools.permutations(self.walzenList, self.enigma.numberOfWalzen):
+   if self.notify:
+    self.notify('{}.gilloglyAttackPhase1: - examining umkehrwalze = {}'.format(self.__class__.__name__, umkehrwalze.name))
+   for walzen in self.walzenList:
+    if self.notify:
+     nameList = list()
+     for walze in walzen:
+      nameList.append(walze.name)
+     self.notify('{}.gilloglyAttackPhase1:  - examining walzen = {}'.format(self.__class__.__name__, nameList))
     for tagesWalzenStellungenTuple in self.tagesWalzenStellungenList:
      tagesWalzenStellungen = ''.join(tagesWalzenStellungenTuple)
      if len(self.zusatzwalzenList) > 0:
       for zusatzwalze in self.zusatzwalzenList:
+       if self.notify:
+        self.notify('{}.gilloglyAttackPhase1:  - examining zusatzwalze = {}'.format(self.__class__.__name__, zusatzwalze.name))
        tagesschluessel = MzEnigma.Tagesschluessel.changeWalzen(
                                   gTagesschluessel, walzen = walzen, tagesWalzenStellungen = tagesWalzenStellungen, umkehrwalze = umkehrwalze, zusatzwalze = zusatzwalze)
        doScoring()
@@ -273,6 +326,8 @@ An engine with Steckerbrett is required.
       tagesschluessel = MzEnigma.Tagesschluessel.changeWalzen( 
                                  gTagesschluessel, walzen = walzen, tagesWalzenStellungen = tagesWalzenStellungen, umkehrwalze = umkehrwalze)
       doScoring()
+  if self.notify:
+   self.notify('{}.gilloglyAttackPhase1: bestScore = {:.3f}\n{}'.format(self.__class__.__name__,  bestScore, bestTagesschluessel))
   return bestTagesschluessel
 
  def shotgunPhase2(self, 
@@ -368,8 +423,8 @@ An engine with Steckerbrett is required.
           bestScore = actScore
           bestWiring = tagesschluessel.steckerbrett.wiring
           if self.notify:
-           self.notify('{}.exchangePhase2: cycle {}, exchanging {} <-> {}, score = {}'.format(self.__class__.__name__, cycle + 1, c1, c2, bestScore))
-        tagesschluessel.steckerbrett.wiring = actWiring
+           self.notify('{}.exchangePhase2: cycle {}, exchanging {} <-> {}, score = {:.3f}'.format(self.__class__.__name__, cycle + 1, c1, c2, bestScore))
+         tagesschluessel.steckerbrett.wiring = actWiring
    tagesschluessel.steckerbrett.wiring = bestWiring
   tagesschluessel.steckerbrett.wiring = bestWiring
   return tagesschluessel
@@ -393,17 +448,23 @@ An engine with Steckerbrett is required.
    self.spruchScoring.setSATemperature('')
   bestScore = 0
   tagesschluessel = copy.deepcopy(phase1Tagesschluessel)
+  initialScore = self.spruchScoring.ngramScore(tagesschluessel.decode(encodedSpruch), 1, validChars = tagesschluessel.alphabet)
   bestWiring = tagesschluessel.steckerbrett.wiring
   
   for cycle in range(cycles):
    tagesschluessel = self.shotgunPhase2(self, tagesschluessel, encodedSpruch,  noImprovement)
    actScore = self.spruchScoring.newNgramScore(tagesschluessel.decode(encodedSpruch), bestScore, tagesschluessel.alphabet)
+   if self.notify:
+    self.notify('{}.gilloglyAttackPhase2/cycle {}: score = {:.3f} (best: {:.3f})'.format(self.__class__.__name__, cycle, actScore, bestScore))
    if actScore > bestScore:
     bestScore = actScore
     bestWiring = tagesschluessel.steckerbrett.wiring
    newSteckerbrett = MzEnigma.Steckerbrett.Mark_3(alphabet = tagesschluessel.alphabet)
    tagesschluessel.steckerbrett.wiring = newSteckerbrett.wiring
   tagesschluessel.steckerbrett.wiring = bestWiring
+  if self.notify:
+   finalScore = self.spruchScoring.ngramScore(tagesschluessel.decode(encodedSpruch), 1, validChars = tagesschluessel.alphabet)
+   self.notify('{}.gilloglyAttackPhase2: score {:.3f} -> {:.3f}'.format(self.__class__.__name__, initialScore, finalScore))
   return tagesschluessel
 
  def mzAttackPhase2(self, phase1Tagesschluessel : MzEnigma.Tagesschluessel, encodedSpruch : str = '') -> MzEnigma.Tagesschluessel:
@@ -454,12 +515,12 @@ An engine with Steckerbrett is required.
    connectSrc = unwired[maxN]
    unwired.pop(unwired.index(connectSrc))
    if self.notify:
-    self.notify('{}.mzAttackPhase2: connecting {} -> {}, diffScore = {}'.format(self.__class__.__name__, connectSrc, connectTgt, maxScore))
+    self.notify('{}.mzAttackPhase2: connecting {} -> {}, maxScore = {:.3f}'.format(self.__class__.__name__, connectSrc, connectTgt, maxScore))
    if connectSrc != connectTgt:
     tagesschluessel.steckerbrett.addMark3Setting(connectSrc, connectTgt)
     unwired.pop(unwired.index(connectTgt))
     connection += 1
   if self.notify:
    finalScore = self.spruchScoring.ngramScore(tagesschluessel.decode(encodedSpruch), 1, validChars = tagesschluessel.alphabet)
-   self.notify('{}.mzAttackPhase2: score {} -> {}'.format(self.__class__.__name__, initialScore, finalScore))
+   self.notify('{}.mzAttackPhase2: score {:.3f} -> {:.3f}'.format(self.__class__.__name__, initialScore, finalScore))
   return tagesschluessel
