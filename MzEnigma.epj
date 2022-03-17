@@ -2,7 +2,7 @@
   "header": {
     "comment": "eric project file for project MzEnigma",
     "copyright": "Copyright (C) 2021 Reinhard M\u00e4rz, ",
-    "saved": "2021-10-08, 08:38:46"
+    "saved": "2021-11-18, 17:52:05"
   },
   "project": {
     "AUTHOR": "Reinhard M\u00e4rz",
@@ -75,7 +75,9 @@
       "MzEnigma/__init__.py",
       "test/conftest.py",
       "test/test_components.py",
-      "__init__.py"
+      "test/test_enigma.py",
+      "MzEnigma/analyzeEnigma.py",
+      "test/test_analyzeEnigma.py"
     ],
     "SPELLEXCLUDES": "",
     "SPELLLANGUAGE": "en_US",
