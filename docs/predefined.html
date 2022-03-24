@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predefined Components and Engines &mdash; MzEnigma V1.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Enigma Analysis" href="analyzeEnigma.html" />
+    <link rel="prev" title="Enigma" href="enigma.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> MzEnigma
+          </a>
+              <div class="version">
+                V1.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="component.html">Enigma Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enigma.html">Enigma</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Predefined Components and Engines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#steckerbrett-components">Steckerbrett Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#predefined-engines">Predefined Engines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#commercial-enigma-a-b-mark-1">1924 Commercial Enigma A, B Mark 1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commercial-enigma-a-133">1925 Commercial Enigma A-133</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reichswehr-enigma-d-k-commercial-enigma-a26-and-a28">1926 Reichswehr Enigma D, K, Commercial Enigma A26 and A28</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reichswehr-enigma-i-1940-kriegsmarine-enigma-m3-1941-u-boot-enigma-m4">1929 Reichswehr Enigma I, 1940 Kriegsmarine Enigma M3, 1941 U-Boot Enigma M4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enigma-t-tirpitz">1942 Enigma T (Tirpitz)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#g31-abwehr-enigma">1931 G31 Abwehr Enigma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#norway-enigma-norenigma">1945 Norway Enigma (Norenigma)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="analyzeEnigma.html">Enigma Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MzEnigma</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Predefined Components and Engines</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/predefined.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="predefined-components-and-engines">
+<h1>Predefined Components and Engines<a class="headerlink" href="#predefined-components-and-engines" title="Permalink to this headline"></a></h1>
+<p>See <a class="reference external" href="https://www.cryptomuseum.com/crypto/enigma/tree.htm">crytomuseum</a> for details …</p>
+<section id="steckerbrett-components">
+<h2>Steckerbrett Components<a class="headerlink" href="#steckerbrett-components" title="Permalink to this headline"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MARK_1</span> <span class="o">=</span> <span class="n">Steckerbrett</span><span class="o">.</span><span class="n">Mark_1</span><span class="p">()</span> <span class="c1"># random wiring</span>
+<span class="n">MARK_2</span> <span class="o">=</span> <span class="n">Steckerbrett</span><span class="o">.</span><span class="n">Mark_2</span><span class="p">()</span> <span class="c1"># random wiring</span>
+<span class="n">MARK_3</span> <span class="o">=</span> <span class="n">Steckerbrett</span><span class="o">.</span><span class="n">Mark_3</span><span class="p">(</span><span class="n">nConnections</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="c1"># random wiring</span>
+<span class="n">UnconnectedSteckerbrett</span> <span class="o">=</span> <span class="n">Steckerbrett</span><span class="p">(</span><span class="s1">&#39;Unconnected&#39;</span><span class="p">,</span> <span class="n">stdAlphabet</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="predefined-engines">
+<h2>Predefined Engines<a class="headerlink" href="#predefined-engines" title="Permalink to this headline"></a></h2>
+<section id="commercial-enigma-a-b-mark-1">
+<h3>1924 Commercial Enigma A, B Mark 1<a class="headerlink" href="#commercial-enigma-a-b-mark-1" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I_A</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I_A&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;DMTWSILRUYQNKFEJCAZBPGXOHV&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+<span class="n">II_A</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II_A&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;HQZGPJTMOBLNCIFDYAWVEUSRKX&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+<span class="n">III_A</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III_A&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;UQNTLSZFMREHDPXKIBVYGJCWOA&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+<span class="n">UKW_D</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW_D&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;IMETCGFRAYSQBZXWLHKDVUPOJN&#39;</span><span class="p">)</span>
+<span class="n">Enigma_A</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma A&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_A</span><span class="p">,</span> <span class="n">II_A</span><span class="p">,</span> <span class="n">III_A</span><span class="p">],</span> <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_D</span><span class="p">],</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="commercial-enigma-a-133">
+<h3>1925 Commercial Enigma A-133<a class="headerlink" href="#commercial-enigma-a-133" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I_SGS</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I_SGS&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;PSBGÖXQJDHOÄUCFRTEZVÅINLYMKA&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Ä&#39;</span><span class="p">,</span> <span class="n">alphabet</span> <span class="o">=</span> <span class="n">sgsAlphabet</span><span class="p">)</span>
+<span class="n">II_SGS</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II_SGS&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;CHNSYÖADMOTRZXBÄIGÅEKQUPFLVJ&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Ä&#39;</span><span class="p">,</span> <span class="n">alphabet</span> <span class="o">=</span> <span class="n">sgsAlphabet</span><span class="p">)</span>
+<span class="n">III_SGS</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III_SGS&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;ÅVQIAÄXRJBÖZSPCFYUNTHDOMEKGL&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Ä&#39;</span><span class="p">,</span> <span class="n">alphabet</span> <span class="o">=</span> <span class="n">sgsAlphabet</span><span class="p">)</span>
+<span class="n">UKW_SGS</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW_SGS&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;LDGBÄNCPSKJAVFZHXUIÅRMQÖOTEY&#39;</span><span class="p">,</span> <span class="n">alphabet</span> <span class="o">=</span> <span class="n">sgsAlphabet</span><span class="p">)</span>
+<span class="n">Enigma_SGS</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma SGS&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_SGS</span><span class="p">,</span> <span class="n">II_SGS</span><span class="p">,</span> <span class="n">III_SGS</span><span class="p">],</span> <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_SGS</span><span class="p">],</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="reichswehr-enigma-d-k-commercial-enigma-a26-and-a28">
+<h3>1926 Reichswehr Enigma D, K, Commercial Enigma A26 and A28<a class="headerlink" href="#reichswehr-enigma-d-k-commercial-enigma-a26-and-a28" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I_D</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I_D&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;LPGSZMHAEOQKVXRFYBUTNICJDW&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+<span class="n">II_D</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II_D&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;SLVGBTFXJQOHEWIRZYAMKPCNDU&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;E&#39;</span><span class="p">)</span>
+<span class="n">III_D</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III_D&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;CJGDPSHKTURAWZXFMYNQOBVLIE&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;N&#39;</span><span class="p">)</span>
+<span class="n">Enigma_D</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma D&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_D</span><span class="p">,</span> <span class="n">II_D</span><span class="p">,</span> <span class="n">III_D</span><span class="p">],</span> <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_D</span><span class="p">],</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="reichswehr-enigma-i-1940-kriegsmarine-enigma-m3-1941-u-boot-enigma-m4">
+<h3>1929 Reichswehr Enigma I, 1940 Kriegsmarine Enigma M3, 1941 U-Boot Enigma M4<a class="headerlink" href="#reichswehr-enigma-i-1940-kriegsmarine-enigma-m3-1941-u-boot-enigma-m4" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;EKMFLGDQVZNTOWYHXUSPAIBRCJ&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Q&#39;</span><span class="p">)</span>
+<span class="n">II</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;AJDKSIRUXBLHWTMCQGZNPYFVOE&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;E&#39;</span><span class="p">)</span>
+<span class="n">III</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;BDFHJLCPRTXVZNYEIWGAKMUSQO&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;V&#39;</span><span class="p">)</span>
+<span class="n">IV</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;IV&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;ESOVPZJAYQUIRHXLNFTGKDCMWB&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;J&#39;</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;V&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;VZBRGITYUPSDNHLXAWMJQOFECK&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+<span class="n">VI</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;VI&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;JPGVOUMFYQBENHZRDKASXLICTW&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;ZM&#39;</span><span class="p">)</span>
+<span class="n">VII</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;VII&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;NZJHGRCXMYSWBOUFAIVLPEKQDT&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;ZM&#39;</span><span class="p">)</span>
+<span class="n">VIII</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;VIII&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;FKQHTLXOCBJSPDZRAMEWNIUYGV&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;ZM&#39;</span><span class="p">)</span>
+<span class="n">UKW_A</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW-A&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;EJMZALYXVBWFCRQUONTSPIKHGD&#39;</span><span class="p">)</span>
+<span class="n">UKW_B</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW-B&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;YRUHQSLDPXNGOKMIEBFZCWVJAT&#39;</span><span class="p">)</span>
+<span class="n">UKW_C</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW-C&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;FVPJIAOYEDRZXWGCTKUQSBNMHL&#39;</span><span class="p">)</span>
+<span class="n">UKW_ThinB</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW-ThinB&#39;</span><span class="p">,</span>   <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;ENKQAUYWJICOPBLMDXZVFTHRGS&#39;</span><span class="p">)</span>
+<span class="n">UKW_ThinC</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW-ThinC&#39;</span><span class="p">,</span>   <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;RDOBJNTKVEHMLFCWZAXGYIPSUQ&#39;</span><span class="p">)</span>
+<span class="n">Beta</span> <span class="o">=</span> <span class="n">Zusatzwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Beta&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;LEYJVCNIXWPBQMDRTAKZGFUHOS&#39;</span><span class="p">)</span>
+<span class="n">Gamma</span> <span class="o">=</span> <span class="n">Zusatzwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;FSOKANUERHMBTIYCWLQPZXVGJD&#39;</span><span class="p">)</span>
+<span class="n">Enigma_I</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma I&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">III</span><span class="p">,</span> <span class="n">IV</span><span class="p">,</span> <span class="n">V</span><span class="p">],</span> <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_A</span><span class="p">,</span> <span class="n">UKW_B</span><span class="p">,</span> <span class="n">UKW_C</span><span class="p">],</span> <span class="n">steckerbrett</span> <span class="o">=</span> <span class="n">MARK_3</span><span class="p">,</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">Enigma_M3</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma M3&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">III</span><span class="p">,</span> <span class="n">IV</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">VI</span><span class="p">,</span> <span class="n">VII</span><span class="p">,</span> <span class="n">VIII</span><span class="p">],</span>
+                           <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_A</span><span class="p">,</span> <span class="n">UKW_B</span><span class="p">,</span> <span class="n">UKW_C</span><span class="p">],</span> <span class="n">steckerbrett</span> <span class="o">=</span> <span class="n">MARK_3</span><span class="p">,</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">Enigma_M4</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma M4&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">III</span><span class="p">,</span> <span class="n">IV</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">VI</span><span class="p">,</span> <span class="n">VII</span><span class="p">,</span> <span class="n">VIII</span><span class="p">],</span> <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_ThinB</span><span class="p">,</span> <span class="n">UKW_ThinC</span><span class="p">],</span>
+                           <span class="n">steckerbrett</span> <span class="o">=</span> <span class="n">MARK_3</span><span class="p">,</span> <span class="n">zusatzwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">Beta</span><span class="p">,</span> <span class="n">Gamma</span><span class="p">],</span>  <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="enigma-t-tirpitz">
+<h3>1942 Enigma T (Tirpitz)<a class="headerlink" href="#enigma-t-tirpitz" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I_T</span>   <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;KPTYUELOCVGRFQDANJMBSWHZXI&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;WZEKQ&#39;</span><span class="p">)</span>
+<span class="n">II_T</span>  <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;UPHZLWEQMTDJXCAKSOIGVBYFNR&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;WZFLR&#39;</span><span class="p">)</span>
+<span class="n">III_T</span>         <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;QUDLYRFEKONVZAXWHMGPJBSICT&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;WZEKQ&#39;</span><span class="p">)</span>
+<span class="n">IV_T</span>  <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;IV_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;CIWTBKXNRESPFLYDAGVHQUOJZM&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;WZFLR&#39;</span><span class="p">)</span>
+<span class="n">V_T</span>   <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;V_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;UAXGISNJBVERDYLFZWTPCKOHMQ&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;YCFKR&#39;</span><span class="p">)</span>
+<span class="n">VI_T</span>  <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;VI_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;XFUZGALVHCNYSEWQTDMRBKPIOJ&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;XEIMQ&#39;</span><span class="p">)</span>
+<span class="n">VII_T</span>         <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;VII_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;BJVFTXPLNAYOZIKWGDQERUCHSM&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;YCFKR&#39;</span><span class="p">)</span>
+<span class="n">VIII_T</span>        <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;VIII_T&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;YMTPNZHWKODAJXELUQVGCBISFR&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;XEIMQ&#39;</span><span class="p">)</span>
+<span class="n">UKW_T</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW_T&#39;</span><span class="p">,</span>   <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;GEKPBTAUMOCNILJDXZYFHWVQSR&#39;</span><span class="p">)</span>
+<span class="n">Enigma_T</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma Tirpitz&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_T</span><span class="p">,</span> <span class="n">II_T</span><span class="p">,</span> <span class="n">III_T</span><span class="p">,</span> <span class="n">IV_T</span><span class="p">,</span> <span class="n">V_T</span><span class="p">,</span> <span class="n">VI_T</span><span class="p">,</span> <span class="n">VII_T</span><span class="p">,</span> <span class="n">VIII_T</span><span class="p">],</span>
+                         <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_T</span><span class="p">],</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="g31-abwehr-enigma">
+<h3>1931 G31 Abwehr Enigma<a class="headerlink" href="#g31-abwehr-enigma" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I_G312</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I_G312&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;DMTWSILRUYQNKFEJCAZBPGXOHV&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;SUVWZABCEFGIKLOPQ&#39;</span><span class="p">)</span>
+<span class="n">II_G312</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II_G312&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;HQZGPJTMOBLNCIFDYAWVEUSRKX&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;STVYZACDFGHKMNQ&#39;</span><span class="p">)</span>
+<span class="n">III_G312</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III_G312&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;UQNTLSZFMREHDPXKIBVYGJCWOA&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;UWXAEFHKMNR&#39;</span><span class="p">)</span>
+<span class="n">UKW_G312</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW_G312&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;RULQMZJSYGOCETKWDAHNBXPVIF&#39;</span><span class="p">)</span>
+<span class="n">Enigma_G312</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Enigma G-312&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_G312</span><span class="p">,</span> <span class="n">II_G312</span><span class="p">,</span> <span class="n">III_G312</span><span class="p">],</span>
+                         <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_G312</span><span class="p">],</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="norway-enigma-norenigma">
+<h3>1945 Norway Enigma (Norenigma)<a class="headerlink" href="#norway-enigma-norenigma" title="Permalink to this headline"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">I_N</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;I_N&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;WTOKASUYVRBXJHQCPZEFMDINLG&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Q&#39;</span><span class="p">)</span>
+<span class="n">II_N</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;II_N&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;GJLPUBSWEMCTQVHXAOFZDRKYNI&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;E&#39;</span><span class="p">)</span>
+<span class="n">III_N</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;III_N&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;JWFMHNBPUSDYTIXVZGRQLAOEKC&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;V&#39;</span><span class="p">)</span>
+<span class="n">IV_N</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;IV_N&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;FGZJMVXEPBWSHQTLIUDYKCNRAO&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;J&#39;</span><span class="p">)</span>
+<span class="n">V_N</span> <span class="o">=</span> <span class="n">Walze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;V_N&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;HEJXQOTZBVFDASCILWPGYNMURK&#39;</span><span class="p">,</span> <span class="n">notches</span> <span class="o">=</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+<span class="n">UKW_N</span> <span class="o">=</span> <span class="n">Umkehrwalze</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;UKW_N&#39;</span><span class="p">,</span> <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;MOWJYPUXNDSRAIBFVLKZGQCHET&#39;</span><span class="p">)</span>
+<span class="n">Enigma_N</span> <span class="o">=</span> <span class="n">Enigma</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;Norenigma&#39;</span><span class="p">,</span> <span class="n">walzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_N</span><span class="p">,</span> <span class="n">II_N</span><span class="p">,</span> <span class="n">III_N</span><span class="p">,</span> <span class="n">IV_N</span><span class="p">,</span> <span class="n">V_N</span><span class="p">],</span>
+                         <span class="n">umkehrwalzen</span> <span class="o">=</span> <span class="p">[</span><span class="n">UKW_N</span><span class="p">],</span> <span class="n">numberOfWalzen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="enigma.html" class="btn btn-neutral float-left" title="Enigma" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="analyzeEnigma.html" class="btn btn-neutral float-right" title="Enigma Analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Reinhard März.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

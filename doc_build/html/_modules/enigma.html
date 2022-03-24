@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>enigma &mdash; MzEnigma V1.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> MzEnigma
+          </a>
+              <div class="version">
+                V1.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../component.html">Enigma Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enigma.html">Enigma</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../predefined.html">Steckerbrett Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analyzeEnigma.html">Enigma Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MzEnigma</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>enigma</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for enigma</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">MzEnigma</span>
+
+<div class="viewcode-block" id="SpruchScoring"><a class="viewcode-back" href="../enigma.html#enigma.SpruchScoring">[docs]</a><span class="k">class</span> <span class="nc">SpruchScoring</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Toolbox for scoring of a spruch. In the background, this object holds</span>
+<span class="sd"> dictionary with character n-grams. By default, the dictionary with the </span>
+<span class="sd"> longest n-gram is used.</span>
+<span class="sd"> </span>
+<span class="sd"> :param language: language to be used for ngram scoring (required)</span>
+<span class="sd"> :param normalize: normalize ngram values with respect to maxScore </span>
+<span class="sd"> :param logarithmic: 10*math.log10(ngramDict[score]/minScore)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">language</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">normalize</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">logarithmic</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">resPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="s1">&#39;Resources&#39;</span><span class="p">)</span> 
+  <span class="k">assert</span> <span class="n">language</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;german&#39;</span><span class="p">],</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: Language </span><span class="si">{}</span><span class="s2"> not supported, use &#39;english&#39; or &#39;german&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">language</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="n">language</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">logarithmic</span> <span class="o">=</span> <span class="n">logarithmic</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span> <span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span> <span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loadStatistics</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_monograms.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">language</span><span class="p">))</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loadStatistics</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_bigrams.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">language</span><span class="p">))</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loadStatistics</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_trigrams.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">language</span><span class="p">))</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+   <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+   <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+   <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramLimits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">numberOfChars</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">0.0</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">saThreshold</span> <span class="o">=</span> <span class="mf">0.01</span>
+  
+<div class="viewcode-block" id="SpruchScoring.setSATemperature"><a class="viewcode-back" href="../enigma.html#enigma.SpruchScoring.setSATemperature">[docs]</a> <span class="k">def</span> <span class="nf">setSATemperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">numberOfChars</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Enables the temperature for simulated annealing (used by `newNgramScore`)</span>
+<span class="sd"> </span>
+<span class="sd"> :param spruch: spruch of typical length to be scored (required)</span>
+<span class="sd"> :param numberOfChars: n-gram dictionary to be used (default: longest n-grams) </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">nSpruch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spruch</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">nSpruch</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">elif</span> <span class="n">nSpruch</span> <span class="o">&lt;=</span> <span class="mi">30</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">400.0</span>
+  <span class="k">elif</span> <span class="n">nSpruch</span> <span class="o">&lt;=</span> <span class="mi">50</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">400.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">400.0</span> <span class="o">-</span> <span class="mf">315.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nSpruch</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">50</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span>
+  <span class="k">elif</span> <span class="n">nSpruch</span> <span class="o">&lt;=</span> <span class="mi">75</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">315.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">315.0</span> <span class="o">-</span> <span class="mf">240.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nSpruch</span> <span class="o">-</span> <span class="mi">50</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">75</span> <span class="o">-</span> <span class="mi">50</span><span class="p">)</span>
+  <span class="k">elif</span> <span class="n">nSpruch</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">240.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">240.0</span> <span class="o">-</span> <span class="mf">220.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nSpruch</span> <span class="o">-</span> <span class="mi">75</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="mi">75</span><span class="p">)</span>
+  <span class="k">elif</span> <span class="n">nSpruch</span> <span class="o">&lt;=</span> <span class="mi">150</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">220.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">220.0</span> <span class="o">-</span> <span class="mf">200.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nSpruch</span> <span class="o">-</span> <span class="mi">100</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">150</span> <span class="o">-</span> <span class="mi">100</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">=</span> <span class="mf">200.0</span>
+  <span class="k">if</span> <span class="n">numberOfChars</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="s1">&#39;numberOfChars&#39;</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.setSATemperature: no ngrams loaded&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+   <span class="n">numberOfChars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfChars</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">numberOfChars</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.setSATemperature: ngramDict[</span><span class="si">{}</span><span class="s1">] not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">numberOfChars</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">/=</span>  <span class="mi">10</span><span class="o">^</span><span class="mi">8</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span></div>
+
+<div class="viewcode-block" id="SpruchScoring.ngramScore"><a class="viewcode-back" href="../enigma.html#enigma.SpruchScoring.ngramScore">[docs]</a> <span class="k">def</span> <span class="nf">ngramScore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">numberOfChars</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">validChars</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">MzEnigma</span><span class="o">.</span><span class="n">stdAlphabet</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;N-gram score of a spruch</span>
+<span class="sd"> </span>
+<span class="sd"> :param spruch: spruch to be scored (required)</span>
+<span class="sd"> :param numberOfChars: n-gram dictionary to be used (default: longest n-grams) </span>
+<span class="sd"> :param validChars: alphabet of the spruch</span>
+<span class="sd"> :returns: N-gram score</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">_score</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">if</span> <span class="n">numberOfChars</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="s1">&#39;numberOfChars&#39;</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.ngramScore: no ngrams loaded&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+   <span class="n">numberOfChars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfChars</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">numberOfChars</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.ngramScore: ngramDict[</span><span class="si">{}</span><span class="s1">] not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">numberOfChars</span><span class="p">)</span>
+  <span class="n">nChars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="n">numberOfChars</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">validChars</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="n">numberOfChars</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.ngramScore: </span><span class="si">{}</span><span class="s1"> not in ngramDict[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">numberOfChars</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spruch</span><span class="p">)</span> <span class="o">-</span> <span class="n">nChars</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+   <span class="n">ngram</span> <span class="o">=</span> <span class="n">spruch</span><span class="p">[</span><span class="n">n</span><span class="p">:</span> <span class="n">n</span> <span class="o">+</span> <span class="n">nChars</span><span class="p">]</span>
+   <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ngram</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">validChars</span><span class="p">:</span>
+     <span class="n">_score</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramDict</span><span class="p">[</span><span class="n">numberOfChars</span><span class="p">][</span><span class="n">ngram</span><span class="p">]</span>
+     <span class="k">break</span>
+  <span class="k">return</span> <span class="n">_score</span><span class="o">/</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spruch</span><span class="p">)</span> <span class="o">-</span> <span class="n">nChars</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpruchScoring.newNgramScore"><a class="viewcode-back" href="../enigma.html#enigma.SpruchScoring.newNgramScore">[docs]</a> <span class="k">def</span> <span class="nf">newNgramScore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">currentScore</span> <span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">validChars</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">MzEnigma</span><span class="o">.</span><span class="n">stdAlphabet</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Compares the N-gram score of a spruch with the currentScore. </span>
+<span class="sd">  Uses simulated if enabled.</span>
+<span class="sd"> </span>
+<span class="sd"> :param spruch: spruch to be scored (required)</span>
+<span class="sd"> :param currentScore: current score (required)</span>
+<span class="sd"> :param validChars: alphabet of the spruch</span>
+<span class="sd"> :returns: N-gram score</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngramScore</span><span class="p">(</span><span class="n">spruch</span><span class="p">,</span> <span class="n">validChars</span> <span class="o">=</span> <span class="n">validChars</span><span class="p">)</span>
+  <span class="n">diffScore</span> <span class="o">=</span> <span class="n">score</span> <span class="o">-</span> <span class="n">currentScore</span>
+  <span class="k">if</span> <span class="n">diffScore</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+   <span class="k">return</span> <span class="n">score</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+   <span class="k">return</span> <span class="n">currentScore</span>
+  <span class="n">diffScore</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saTemperature</span>
+  <span class="n">prob</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">diffScore</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">prob</span> <span class="o">&lt;=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saThreshold</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">):</span>
+   <span class="n">score</span> <span class="o">=</span> <span class="n">currentScore</span>
+  <span class="k">return</span> <span class="n">score</span></div>
+
+<div class="viewcode-block" id="SpruchScoring.indexOfCoincidence"><a class="viewcode-back" href="../enigma.html#enigma.SpruchScoring.indexOfCoincidence">[docs]</a> <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">indexOfCoincidence</span><span class="p">(</span><span class="n">spruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">validChars</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">MzEnigma</span><span class="o">.</span><span class="n">stdAlphabet</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;index of coincidence of a spruch,</span>
+<span class="sd">  i.e. relative frequency of characters independent of the underlying language </span>
+<span class="sd"> </span>
+<span class="sd"> :param spruch: spruch to be scored (required)</span>
+<span class="sd"> :param validChars: alphabet of the spruch</span>
+<span class="sd"> :returns: index of coincidence</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">nAlphabet</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">validChars</span><span class="p">)</span>
+  <span class="n">nSpruch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spruch</span><span class="p">)</span>
+  <span class="n">iocList</span> <span class="o">=</span> <span class="n">nAlphabet</span> <span class="o">*</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">spruch</span><span class="p">:</span>
+   <span class="n">iocList</span><span class="p">[</span><span class="n">validChars</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="n">ioc</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nAlphabet</span><span class="p">):</span>
+   <span class="n">ioc</span> <span class="o">+=</span> <span class="n">iocList</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">iocList</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">ioc</span><span class="o">/</span><span class="p">(</span><span class="n">nSpruch</span> <span class="o">*</span> <span class="p">(</span><span class="n">nSpruch</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+ <span class="k">def</span> <span class="nf">_loadStatistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statfile</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+  <span class="n">ngramDict</span> <span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">alphabet</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">stdAlphabet</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">sgsAlphabet</span><span class="p">)</span>
+  <span class="n">actPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resPath</span><span class="p">,</span> <span class="n">statfile</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">actPath</span><span class="p">):</span>
+   <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+  <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">actPath</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+   <span class="k">for</span> <span class="n">ngram</span><span class="p">,</span> <span class="n">nDetected</span> <span class="ow">in</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">):</span>
+    <span class="n">isInside</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ngram</span><span class="p">:</span>
+     <span class="n">isInside</span> <span class="o">&amp;=</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">alphabet</span>
+    <span class="k">if</span> <span class="n">isInside</span><span class="p">:</span>
+     <span class="n">nDetected</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nDetected</span><span class="p">)</span>
+     <span class="k">assert</span> <span class="n">nDetected</span> <span class="o">&gt;</span> <span class="mi">0</span>
+     <span class="n">ngramDict</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span> <span class="o">=</span> <span class="n">nDetected</span>
+  <span class="n">maxValue</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ngramDict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+  <span class="n">minValue</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ngramDict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logarithmic</span><span class="p">:</span>
+   <span class="n">ngramDict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">ngram</span> <span class="p">:</span> <span class="mi">10</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ngramDict</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span><span class="o">/</span><span class="n">minValue</span><span class="p">)</span> <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">ngramDict</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
+  <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+   <span class="n">ngramDict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">ngram</span> <span class="p">:</span> <span class="n">ngramDict</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span><span class="o">/</span><span class="n">maxValue</span> <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">ngramDict</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">minValue</span> <span class="o">/=</span> <span class="n">maxValue</span>
+   <span class="n">maxValue</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">return</span> <span class="n">ngramDict</span><span class="p">,</span> <span class="p">(</span><span class="n">minValue</span><span class="p">,</span> <span class="n">maxValue</span><span class="p">)</span>
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1"> language: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> normalized: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> logarithmic: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">language</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logarithmic</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Enigma"><a class="viewcode-back" href="../enigma.html#enigma.Enigma">[docs]</a><span class="k">class</span> <span class="nc">Enigma</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Represents an Enigma engine with all available accessories. </span>
+<span class="sd">    If no umkehrwalzen are defined, the encryption is not symmetric any more !</span>
+<span class="sd"> </span>
+<span class="sd"> :param model: model of the Enigma (required)</span>
+<span class="sd"> :param umkehrwalzen: available objects of type &#39;Umkehrwalze&#39; (if any)</span>
+<span class="sd"> :param walzen: available objects of type &#39;Walze&#39; (at least 1 required)</span>
+<span class="sd"> :param numberOfWalzen: number of  objects of type &#39;Walze&#39; to be inserted</span>
+<span class="sd"> :param steckerbrett: object of type &#39;Steckerbrett&#39;, if any</span>
+<span class="sd"> :param zusatzwalzen: available objects of type &#39;Zusatzwalze&#39;, if any</span>
+<span class="sd"> :param notify: notification function (e.g. print)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+  <span class="n">model</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">umkehrwalzen</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Umkehrwalze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">walzen</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Walze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">numberOfWalzen</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> 
+  <span class="n">steckerbrett</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Steckerbrett</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">zusatzwalzen</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Zusatzwalze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="k">assert</span> <span class="n">model</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: At least 1 character in model required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model</span>
+  <span class="k">assert</span> <span class="n">walzen</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: At least 1 walze required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="n">alphabet</span> <span class="o">=</span> <span class="n">walzen</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">alphabet</span>
+  <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">walzen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabets in all walzen must match&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_walzen</span> <span class="o">=</span> <span class="n">walzen</span>
+  <span class="k">if</span> <span class="n">umkehrwalzen</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">umkehrwalzen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabets in all umkehrwalzen must match&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_umkehrwalzen</span> <span class="o">=</span> <span class="n">umkehrwalzen</span>
+  <span class="k">assert</span> <span class="n">numberOfWalzen</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">numberOfWalzen</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">walzen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: 0 &lt; numberOfWalzen &lt; </span><span class="si">{}</span><span class="s1">  required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">walzen</span><span class="p">))</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfWalzen</span> <span class="o">=</span> <span class="n">numberOfWalzen</span>
+  <span class="k">if</span> <span class="n">steckerbrett</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">steckerbrett</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabets in steckerbrett must match&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_steckerbrett</span> <span class="o">=</span> <span class="n">steckerbrett</span>
+  <span class="k">if</span> <span class="n">zusatzwalzen</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">zusatzwalzen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabets in all zusatzwalzen must match&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_zusatzwalzen</span> <span class="o">=</span> <span class="n">zusatzwalzen</span>
+
+<div class="viewcode-block" id="Enigma.validCribPositions"><a class="viewcode-back" href="../enigma.html#enigma.Enigma.validCribPositions">[docs]</a> <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">validCribPositions</span><span class="p">(</span><span class="n">encodedSpruch</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">crib</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;This function delivers all positions where no crib letter encrypts as itself</span>
+<span class="sd">  </span>
+<span class="sd">:param encodedSpruch: message to be decoded</span>
+<span class="sd">:param crib: substring to be examined</span>
+<span class="sd">:returns: list of valid positions relative to the encodedSpruch</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;validCribPositions: encodedSpruch is missing&#39;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">crib</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;validCribPositions: crib is missing&#39;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">crib</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">),</span> <span class="s1">&#39;validCribPositions: len(encodedSpruch) == </span><span class="si">{}</span><span class="s1"> &lt; len(crib) == </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">crib</span><span class="p">))</span>
+
+  <span class="n">validPosList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">startPos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">crib</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+   <span class="c1"># match = difflib.SequenceMatcher(None, encodedSpruch[startPos:], crib)</span>
+   <span class="n">isMatched</span> <span class="o">=</span> <span class="kc">False</span>
+   <span class="k">for</span> <span class="n">ps</span><span class="p">,</span> <span class="n">pc</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">[</span><span class="n">startPos</span><span class="p">:],</span> <span class="n">crib</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ps</span> <span class="o">==</span> <span class="n">pc</span><span class="p">:</span>
+     <span class="n">isMatched</span> <span class="o">=</span> <span class="kc">True</span>
+     <span class="k">break</span>
+   <span class="k">if</span> <span class="ow">not</span> <span class="n">isMatched</span><span class="p">:</span>
+    <span class="n">validPosList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">startPos</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">validPosList</span></div>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">alphabet</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the alphabet of the engine</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walzen</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">alphabet</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the name of the engine</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">umkehrwalzen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Umkehrwalze</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns a list of Umkehrwalzen</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_umkehrwalzen</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">walzen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Walze</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns a list of Walzen</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walzen</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfWalzen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns a number of Walzen built-in at the engine&#39;s operation</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfWalzen</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">steckerbrett</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the steckerbrett if any</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steckerbrett</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">zusatzwalzen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Zusatzwalze</span><span class="p">]]:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns a list of Zusatzwalzen if any</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zusatzwalzen</span>
+  
+ <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enigma</span> <span class="p">:</span> <span class="n">Enigma</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">==</span> <span class="n">enigma</span><span class="o">.</span><span class="n">model</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_umkehrwalzen</span> <span class="o">==</span> <span class="n">enigma</span><span class="o">.</span><span class="n">umkehrwalzen</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walzen</span> <span class="o">==</span> <span class="n">enigma</span><span class="o">.</span><span class="n">walzen</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfWalzen</span> <span class="o">==</span> <span class="n">enigma</span><span class="o">.</span><span class="n">numberOfWalzen</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steckerbrett</span> <span class="o">==</span> <span class="n">enigma</span><span class="o">.</span><span class="n">steckerbrett</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zusatzwalzen</span> <span class="o">==</span> <span class="n">enigma</span><span class="o">.</span><span class="n">zusatzwalzen</span> 
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;class: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">model: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">alphabet: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">Umkehrwalzen:&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">walze</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_umkehrwalzen</span><span class="p">:</span>
+   <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">walze</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;class:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s1">&#39;alphabet:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+     <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">line</span>
+  <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">number of Walzen: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">Walzen:&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numberOfWalzen</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">walze</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walzen</span><span class="p">:</span>
+   <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">walze</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;class:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s1">&#39;alphabet:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+     <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">line</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steckerbrett</span><span class="p">:</span>
+   <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Steckerbrett:&#39;</span>
+   <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steckerbrett</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;class:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s1">&#39;alphabet:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+     <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">line</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zusatzwalzen</span><span class="p">:</span>
+   <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Zusatzwalzen:&#39;</span>
+   <span class="k">for</span> <span class="n">walze</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zusatzwalzen</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">walze</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+     <span class="k">if</span> <span class="s1">&#39;class:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s1">&#39;alphabet:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+      <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">line</span>
+  <span class="k">return</span> <span class="n">content</span></div>
+
+<div class="viewcode-block" id="Tagesschluessel"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel">[docs]</a><span class="k">class</span> <span class="nc">Tagesschluessel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Represents the Tagesschluessel of an Enigma</span>
+<span class="sd"> </span>
+<span class="sd">:param enigma: model of the Enigma (required)</span>
+<span class="sd">:param umkehrwalze: &#39;Umkehrwalze&#39; (if undefined, randomly selected)</span>
+<span class="sd">:param walzen: List of type &#39;Walze&#39; (if undefined, randomly selecte(if undefined, randomly selected)</span>
+<span class="sd">:param zusatzwalze: &#39;Zusatzwalze&#39; (if undefined, randomly selected)</span>
+<span class="sd">:param blank: replacement character for a blank</span>
+<span class="sd">:param notify: notification function (e.g. print)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+  <span class="n">enigma</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Enigma</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  
+  <span class="n">umkehrwalze</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Umkehrwalze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">walzen</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Walze</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="n">tagesWalzenStellungen</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">steckerbrett</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Steckerbrett</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">zusatzwalze</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Zusatzwalze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">blank</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>  
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="n">notify</span>
+  <span class="k">assert</span> <span class="n">enigma</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Enigma required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span> <span class="o">=</span><span class="n">enigma</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">blank</span> <span class="o">=</span> <span class="n">blank</span>
+  <span class="n">alphabet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span>
+  <span class="k">if</span> <span class="n">steckerbrett</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">enigma</span><span class="o">.</span><span class="n">steckerbrett</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">enigma</span><span class="o">.</span><span class="n">steckerbrett</span><span class="p">)</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span> <span class="o">=</span> <span class="n">steckerbrett</span>
+  <span class="n">lastWalze</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">walzen</span><span class="p">:</span>
+   <span class="n">walzen</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">enigma</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="n">enigma</span><span class="o">.</span><span class="n">numberOfWalzen</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">walzen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabet in all walzen must match enigma&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">walzen</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">_walze</span> <span class="ow">in</span> <span class="n">walzen</span><span class="p">:</span>
+   <span class="n">walze</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_walze</span><span class="p">)</span>
+   <span class="n">walze</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">walze</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">lastWalze</span><span class="p">:</span>
+    <span class="n">lastWalze</span><span class="o">.</span><span class="n">nextComponent</span> <span class="o">=</span> <span class="n">walze</span>
+    <span class="n">walze</span><span class="o">.</span><span class="n">prevComponent</span> <span class="o">=</span> <span class="n">lastWalze</span>
+   <span class="n">lastWalze</span> <span class="o">=</span> <span class="n">walze</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">firstComponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">firstComponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">if</span> <span class="n">tagesWalzenStellungen</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tagesWalzenStellungen</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">walzen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Walzenstellung, number of characters must match the number of walzen&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+   <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span> <span class="ow">in</span> <span class="n">alphabet</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tagesWalzenStellungen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Walzenstellung, all characters must be in alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">tagesWalzenStellungen</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">enigma</span><span class="o">.</span><span class="n">numberOfWalzen</span><span class="p">))</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span> <span class="o">=</span> <span class="n">tagesWalzenStellungen</span>
+  <span class="k">if</span> <span class="n">zusatzwalze</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">zusatzwalze</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabet in zusatzwalze must match enigma&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="k">elif</span> <span class="n">enigma</span><span class="o">.</span><span class="n">zusatzwalzen</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">zusatzwalze</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">enigma</span><span class="o">.</span><span class="n">zusatzwalzen</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">if</span> <span class="n">zusatzwalze</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">zusatzwalze</span><span class="p">)</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span>
+   <span class="n">lastWalze</span><span class="o">.</span><span class="n">nextComponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span><span class="o">.</span><span class="n">prevComponent</span> <span class="o">=</span> <span class="n">lastWalze</span>
+   <span class="n">lastWalze</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span> <span class="o">=</span> <span class="kc">None</span>
+  <span class="k">if</span> <span class="n">umkehrwalze</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">umkehrwalze</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">==</span> <span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Alphabet in umkehrwalze must match enigma alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">enigma</span><span class="o">.</span><span class="n">umkehrwalzen</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+   <span class="n">umkehrwalze</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">enigma</span><span class="o">.</span><span class="n">umkehrwalzen</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span> <span class="o">=</span> <span class="kc">None</span>
+  <span class="k">if</span> <span class="n">umkehrwalze</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">umkehrwalze</span><span class="p">)</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span>
+   <span class="n">lastWalze</span><span class="o">.</span><span class="n">nextComponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span><span class="o">.</span><span class="n">nextComponent</span> <span class="o">=</span> <span class="n">lastWalze</span>
+
+<div class="viewcode-block" id="Tagesschluessel.changeWalzen"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.changeWalzen">[docs]</a> <span class="nd">@classmethod</span>
+ <span class="k">def</span> <span class="nf">changeWalzen</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> 
+   <span class="n">currentTagesschluessel</span> <span class="p">:</span> <span class="n">Tagesschluessel</span><span class="p">,</span> 
+   <span class="n">umkehrwalze</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Umkehrwalze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+   <span class="n">walzen</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Walze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+   <span class="n">tagesWalzenStellungen</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+   <span class="n">zusatzwalze</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Zusatzwalze</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Changes certain elements of a Tagesschluessel</span>
+<span class="sd"> </span>
+<span class="sd">:param currentTagesschluessel: current Tagesschluessel (required)</span>
+<span class="sd">:param tagesWalzenStellungen: changed Tageswalzenstellungen to be used (if undefined, randomly selected)</span>
+<span class="sd">:param umkehrwalze: &#39;Umkehrwalze&#39; (if undefined, used from currentTagesschluessel)</span>
+<span class="sd">:param walzen: List of type &#39;Walze&#39; (if undefined, used from currentTagesschluessel)</span>
+<span class="sd">:param zusatzwalze: &#39;Zusatzwalze&#39; (if undefined, used from currentTagesschluessel)</span>
+<span class="sd">:returns: Tagesschluessel object</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="n">umkehrwalze</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">umkehrwalze</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">umkehrwalze</span>
+  <span class="k">if</span> <span class="n">walzen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">walzen</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">walzen</span>
+  <span class="k">if</span> <span class="n">zusatzwalze</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">zusatzwalze</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">zusatzwalze</span>
+  <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+   <span class="n">enigma</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">enigma</span><span class="p">,</span>  
+   <span class="n">umkehrwalze</span> <span class="o">=</span> <span class="n">umkehrwalze</span><span class="p">,</span> 
+   <span class="n">steckerbrett</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">steckerbrett</span><span class="p">,</span> 
+   <span class="n">walzen</span> <span class="o">=</span> <span class="n">walzen</span><span class="p">,</span> 
+   <span class="n">tagesWalzenStellungen</span> <span class="o">=</span> <span class="n">tagesWalzenStellungen</span><span class="p">,</span> 
+   <span class="n">zusatzwalze</span> <span class="o">=</span> <span class="n">zusatzwalze</span><span class="p">,</span> 
+   <span class="n">blank</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">blank</span><span class="p">,</span>  
+   <span class="n">notify</span> <span class="o">=</span> <span class="n">currentTagesschluessel</span><span class="o">.</span><span class="n">notify</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Tagesschluessel.findPatterns"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.findPatterns">[docs]</a> <span class="k">def</span> <span class="nf">findPatterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substringList</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">],</span> <span class="n">encodedSpruchList</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+  <span class="sd">&quot;&quot;&quot;Find a list of substringList for any tagesWalzenStellungen at any positions</span>
+<span class="sd"> </span>
+<span class="sd">:param substringList: list of substrings</span>
+<span class="sd">:param encodedSpruchList: list of messages to be searched for substrings</span>
+<span class="sd">:return: dict(substring, set of tagesWalzenStellungen)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">encodedSpruchList</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="n">maxSpruchlength</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">encodedSpruchList</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
+  <span class="n">charSet</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">substring</span> <span class="ow">in</span> <span class="n">substringList</span><span class="p">:</span>
+   <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">substring</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Character </span><span class="si">{}</span><span class="s1"> not in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+    <span class="n">charSet</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+  <span class="n">savedTagesWalzenStellungen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span> 
+  <span class="n">patternDict</span> <span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">tagesWalzenStellungenTuple</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">savedTagesWalzenStellungen</span><span class="p">)):</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tagesWalzenStellungenTuple</span><span class="p">)</span>
+   <span class="n">charEncodingDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+   <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charSet</span><span class="p">:</span>
+    <span class="n">charEncodingDict</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">maxSpruchlength</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">encodedSpruch</span> <span class="ow">in</span> <span class="n">encodedSpruchList</span><span class="p">:</span>
+    <span class="n">lSpruch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">substring</span> <span class="ow">in</span> <span class="n">substringList</span><span class="p">:</span>
+     <span class="n">isInSpruch</span> <span class="o">=</span> <span class="kc">False</span>
+     <span class="n">ls</span> <span class="o">=</span> <span class="n">lSpruch</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">c0</span><span class="p">,</span> <span class="n">cExp</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">encodedSpruch</span><span class="p">[:</span><span class="n">ls</span><span class="p">],</span> <span class="n">charEncodingDict</span><span class="p">[</span><span class="n">substring</span><span class="p">[</span><span class="mi">0</span><span class="p">]][:</span><span class="n">ls</span><span class="p">])):</span>
+      <span class="k">if</span> <span class="n">c0</span> <span class="o">==</span> <span class="n">cExp</span><span class="p">:</span>
+       <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">cm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">substring</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cm</span> <span class="o">==</span> <span class="n">charEncodingDict</span><span class="p">[</span><span class="n">substring</span><span class="p">[</span><span class="n">m</span><span class="p">]][</span><span class="n">nm</span><span class="p">]:</span>
+         <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">substring</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">:</span>
+          <span class="n">isInSpruch</span> <span class="o">=</span> <span class="kc">True</span>
+          <span class="k">break</span>
+     <span class="k">if</span> <span class="n">isInSpruch</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">substring</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">patternDict</span><span class="p">:</span>
+       <span class="n">patternDict</span><span class="p">[</span><span class="n">substring</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+      <span class="n">patternDict</span><span class="p">[</span><span class="n">substring</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">patternDict</span></div>
+
+<div class="viewcode-block" id="Tagesschluessel.findDoublets"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.findDoublets">[docs]</a> <span class="k">def</span> <span class="nf">findDoublets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">second</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="nb">all</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+  <span class="sd">&quot;&quot;&quot;Find doublets of any character at fixed positions</span>
+<span class="sd"> </span>
+<span class="sd">:param first: first position</span>
+<span class="sd">:param second: second position (&gt; first)</span>
+<span class="sd">:return: IF ALL it returns a list of doublets for every position ELSE it returns a list of doublets</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="n">first</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">second</span> <span class="o">&gt;</span> <span class="n">first</span>
+  <span class="n">allDoubletsList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="k">if</span> <span class="nb">all</span><span class="p">:</span>
+   <span class="n">shift</span> <span class="o">=</span> <span class="n">second</span> <span class="o">-</span> <span class="n">first</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">shift</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">ecList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">nc</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">):</span>
+   <span class="n">ecList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
+   <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">((</span><span class="n">second</span> <span class="o">+</span> <span class="n">shift</span><span class="p">)</span> <span class="o">*</span> <span class="n">c</span><span class="p">):</span>
+    <span class="n">ecList</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">shift</span><span class="p">):</span>
+   <span class="n">doubletsList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+   <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">):</span>
+    <span class="n">doubletsList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ecList</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">first</span><span class="o">+</span><span class="n">ns</span><span class="p">]</span> <span class="o">+</span> <span class="n">ecList</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">second</span><span class="o">+</span><span class="n">ns</span><span class="p">])</span>
+   <span class="n">allDoubletsList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doubletsList</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">:</span>
+   <span class="k">return</span> <span class="n">doubletsList</span>
+  <span class="k">return</span> <span class="n">allDoubletsList</span></div>
+
+ <span class="k">def</span> <span class="nf">findTagesWalzenStellungen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rejewskiList</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span> <span class="n">twiceEncodedSpruchWalzenStellungen</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">twiceEncodedSpruchWalzenStellungen</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+   <span class="n">twiceEncodedSpruchWalzenStellungen</span> <span class="o">=</span> <span class="p">[</span><span class="n">twiceEncodedSpruchWalzenStellungen</span><span class="p">]</span>
+  <span class="n">tagesWalzenStellungen</span> <span class="o">=</span> <span class="kc">None</span>
+  <span class="k">for</span> <span class="n">tesws</span> <span class="ow">in</span> <span class="n">twiceEncodedSpruchWalzenStellungen</span><span class="p">:</span>
+   <span class="n">shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tesws</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+   <span class="k">assert</span> <span class="n">shift</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">rejewskiList</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.findTagesWalzenStellungen: len(twiceEncodedSpruchWalzenStellungen) = </span><span class="si">{}</span><span class="s1"> == 2*len(rejewskiList) = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">rejewskiList</span><span class="p">))</span>
+   <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">doubletsDict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rejewskiList</span><span class="p">):</span>
+    <span class="n">pair</span> <span class="o">=</span> <span class="n">tesws</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">tesws</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="n">shift</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">rejewskiList</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.findTagesWalzenStellungen: </span><span class="si">{}</span><span class="s1"> not a key of rejewskiList[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">pair</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tagesWalzenStellungen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+     <span class="n">tagesWalzenStellungen</span> <span class="o">=</span> <span class="n">rejewskiList</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">pair</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+     <span class="n">tagesWalzenStellungen</span> <span class="o">&amp;=</span> <span class="n">rejewskiList</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">pair</span><span class="p">]</span>
+  <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">tagesWalzenStellungen</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Tagesschluessel.encode"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.encode">[docs]</a> <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spruchWalzenStellungen</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Runs forward through the enigma</span>
+<span class="sd">     If the spruchWalzenStellungen is defined, </span>
+<span class="sd">     - it is encoded twice using the tagesWalzenStellungen</span>
+<span class="sd">     - the spruch is then encoded using the spruchWalzenStellungen</span>
+<span class="sd">     otherwise the spruch is encoded using the tagesWalzenStellungen</span>
+
+<span class="sd">:param spruch: message to be encoded</span>
+<span class="sd">:param spruchWalzenStellungen: see above</span>
+<span class="sd">:returns: encoded spruch</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">):</span>
+   <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">spruchWalzenStellungen</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">spruchWalzenStellungen</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode: Walzenstellung, number of characters must match the number of walzen&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+   <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">spruchWalzenStellungen</span><span class="p">),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode: Walzenstellung, all characters must be in alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">spruchWalzenStellungen</span><span class="p">:</span>
+     <span class="n">out</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_encodeLetter</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="n">spruchWalzenStellungen</span><span class="p">):</span>
+    <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode/spruchWalzenStellungen: </span><span class="si">{}</span><span class="s1"> =&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">spruchWalzenStellungen</span><span class="p">,</span> <span class="n">out</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">spruchWalzenStellungen</span><span class="p">)]))</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">spruch</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+   <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blank</span>
+   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_encodeLetter</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode: </span><span class="si">{}</span><span class="s1"> =&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">spruch</span><span class="p">,</span> <span class="n">out</span><span class="p">))</span>
+  <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">):</span>
+   <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+  <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="Tagesschluessel.encodeMatrix"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.encodeMatrix">[docs]</a> <span class="k">def</span> <span class="nf">encodeMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msgLen</span> <span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+  <span class="sd">&quot;&quot;&quot;Runs forward through the enigma using all characters of the alphabet</span>
+
+<span class="sd">:param msgLen: length of messages</span>
+<span class="sd">:returns: list of encoded messages</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">ecList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">nc</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span><span class="p">):</span>
+   <span class="n">ecList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
+   <span class="k">for</span> <span class="n">cs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">msgLen</span> <span class="o">*</span> <span class="n">c</span><span class="p">):</span>
+    <span class="n">ecList</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cs</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">ecList</span></div>
+
+<div class="viewcode-block" id="Tagesschluessel.decode"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.decode">[docs]</a> <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encodedSpruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">useSpruchWalzenStellungen</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Runs backward through the enigma</span>
+<span class="sd">     If useSpruchWalzenStellungen, </span>
+<span class="sd">     - the spruchWalzenStellung is expected twice at the beginning</span>
+<span class="sd">     - the spruch is then decoded using the spruchWalzenStellungen</span>
+<span class="sd">     otherwise the spruch is decoded using the tagesWalzenStellungen</span>
+
+<span class="sd">:param encodedSpruch: message to be decoded</span>
+<span class="sd">:param useSpruchWalzenStellungen: see above</span>
+<span class="sd">:returns: decoded spruch</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">):</span>
+   <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+  <span class="k">if</span> <span class="n">useSpruchWalzenStellungen</span><span class="p">:</span>
+   <span class="n">spruchWalzenStellungen</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+   <span class="n">ls</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">encodedSpruch</span><span class="p">[:</span><span class="mi">2</span><span class="o">*</span><span class="n">ls</span><span class="p">]:</span>
+    <span class="n">spruchWalzenStellungen</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_encodeLetter</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+   <span class="k">assert</span> <span class="n">spruchWalzenStellungen</span><span class="p">[:</span><span class="n">ls</span><span class="p">]</span> <span class="o">==</span> <span class="n">spruchWalzenStellungen</span><span class="p">[</span><span class="n">ls</span><span class="p">:],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.decode: Inconsistent Spruchschlüssel </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">spruchWalzenStellungen</span><span class="p">)</span>
+   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.decode/spruchWalzenStellungen: </span><span class="si">{}</span><span class="s1"> =&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">encodedSpruch</span><span class="p">[:</span><span class="n">ls</span><span class="p">],</span> <span class="n">spruchWalzenStellungen</span><span class="p">[:</span><span class="n">ls</span><span class="p">]))</span>
+   <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="n">spruchWalzenStellungen</span><span class="p">[:</span><span class="n">ls</span><span class="p">]):</span>
+    <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+   <span class="n">encodedSpruch</span> <span class="o">=</span> <span class="n">encodedSpruch</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">ls</span><span class="p">:]</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">encodedSpruch</span><span class="p">:</span>
+   <span class="n">out</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_encodeLetter</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">):</span>
+   <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+  <span class="k">return</span> <span class="n">out</span></div>
+     
+ <span class="k">def</span> <span class="nf">_encodeLetter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Encodes a single character and steps the first Walze</span>
+<span class="sd">  </span>
+<span class="sd">:param c: single character</span>
+<span class="sd">:returns: encoded character</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encodeLetter </span><span class="si">{}</span><span class="s1">: len(</span><span class="si">{}</span><span class="s1">) != 1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encodeLetter: letter (</span><span class="si">{}</span><span class="s1">) not in alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstComponent</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+  
+<div class="viewcode-block" id="Tagesschluessel.chain"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.chain">[docs]</a> <span class="k">def</span> <span class="nf">chain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MzEnigma</span><span class="o">.</span><span class="n">Component</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;Creates a chain of visited components</span>
+
+<span class="sd">:returns: chain list</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">chainList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstComponent</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">forward</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">chainList</span></div>
+  
+<div class="viewcode-block" id="Tagesschluessel.debugEncode"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.debugEncode">[docs]</a> <span class="k">def</span> <span class="nf">debugEncode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span> <span class="p">:</span> <span class="nb">str</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Shows the transformation of a character after each component</span>
+<span class="sd"> </span>
+<span class="sd">:param c: single character</span>
+<span class="sd">:return: text built up from the characters after each component</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.debugEncode: len(</span><span class="si">{}</span><span class="s1">) != 1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.debugEncode: Character </span><span class="si">{}</span><span class="s1"> out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">):</span>
+   <span class="n">walze</span><span class="o">.</span><span class="n">ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+  <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+  <span class="n">actC</span> <span class="o">=</span> <span class="n">c</span>
+  <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="n">forward</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="p">():</span>
+   <span class="n">actC</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">actC</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="n">componentOnly</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+   <span class="n">output</span> <span class="o">+=</span> <span class="n">actC</span>
+  <span class="k">return</span> <span class="n">output</span></div>
+   
+<div class="viewcode-block" id="Tagesschluessel.frequencyDict"><a class="viewcode-back" href="../enigma.html#enigma.Tagesschluessel.frequencyDict">[docs]</a> <span class="k">def</span> <span class="nf">frequencyDict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spruch</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">decode</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]]:</span>
+  <span class="sd">&quot;&quot;&quot;Creates a frequency dictionary of a message</span>
+<span class="sd"> </span>
+<span class="sd">:param spruch: message to be analysed (required)</span>
+<span class="sd">:param decode: use decoced message instead of the original message</span>
+<span class="sd">:return: Dict[frequency, Set[Tuple[char, Tuple[occurrency]]</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="n">decode</span><span class="p">:</span>
+   <span class="n">spruch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">spruch</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">spruch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="n">c2sDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">sc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spruch</span><span class="p">):</span>
+   <span class="k">if</span> <span class="n">sc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">c2sDict</span><span class="p">:</span>
+    <span class="n">c2sDict</span><span class="p">[</span><span class="n">sc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+   <span class="n">c2sDict</span><span class="p">[</span><span class="n">sc</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+  <span class="n">l2csDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">nSet</span> <span class="ow">in</span> <span class="n">c2sDict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+   <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nSet</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">l</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">l2csDict</span><span class="p">:</span>
+    <span class="n">l2csDict</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+   <span class="n">l2csDict</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">c</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">nSet</span><span class="p">))))</span>
+  <span class="k">return</span> <span class="n">l2csDict</span></div>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">alphabet</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the alphabet of the engine</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">alphabet</span>
+
+ <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tagesschluessel</span> <span class="p">:</span> <span class="n">Tagesschluessel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span> <span class="o">==</span> <span class="n">tagesschluessel</span><span class="o">.</span><span class="n">enigma</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span> <span class="o">==</span> <span class="n">tagesschluessel</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span> <span class="o">==</span> <span class="n">tagesschluessel</span><span class="o">.</span><span class="n">umkehrwalze</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">walzen</span> <span class="o">==</span> <span class="n">tagesschluessel</span><span class="o">.</span><span class="n">walzen</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span> <span class="o">==</span> <span class="n">tagesschluessel</span><span class="o">.</span><span class="n">steckerbrett</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span> <span class="o">==</span> <span class="n">tagesschluessel</span><span class="o">.</span><span class="n">zusatzwalze</span>
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;class: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">model: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">alphabet: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enigma</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">walze</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walzen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagesWalzenStellungen</span><span class="p">):</span>
+   <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Walze </span><span class="si">{}</span><span class="s1">, Stellung: </span><span class="si">{}</span><span class="s1">, wiring: </span><span class="si">{}</span><span class="s1">, notches: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">walze</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ringstellung</span><span class="p">,</span> <span class="n">walze</span><span class="o">.</span><span class="n">wiring</span><span class="p">,</span> <span class="n">walze</span><span class="o">.</span><span class="n">notches</span><span class="p">)</span>
+  <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Umkehrwalze: </span><span class="si">{}</span><span class="s1">, wiring: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">umkehrwalze</span><span class="o">.</span><span class="n">wiring</span><span class="p">)</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span><span class="p">:</span>
+   <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Steckerbrett </span><span class="si">{}</span><span class="s1">, wiring: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">steckerbrett</span><span class="o">.</span><span class="n">wiring</span><span class="p">)</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span><span class="p">:</span>
+   <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Zusatzwalze: </span><span class="si">{}</span><span class="s1">, wiring: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zusatzwalze</span><span class="o">.</span><span class="n">wiring</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">content</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Reinhard März.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>component &mdash; MzEnigma V1.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> MzEnigma
+          </a>
+              <div class="version">
+                V1.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../component.html">Enigma Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../enigma.html">Enigma</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../predefined.html">Steckerbrett Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analyzeEnigma.html">Enigma Analysis</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MzEnigma</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>component</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for component</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span>  <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span>  <span class="n">List</span><span class="p">,</span>  <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="n">stdAlphabet</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#39;</span>
+<span class="n">sgsAlphabet</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVXYZÅÄÖ&#39;</span>
+
+<span class="k">class</span> <span class="nc">Umkehrwalze</span><span class="p">:</span> <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">Steckerbrett</span><span class="p">:</span> <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">Zusatzwalze</span><span class="p">:</span> <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">Walze</span><span class="p">:</span> <span class="k">pass</span>
+<span class="n">Component</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Component&#39;</span><span class="p">,</span> <span class="n">Umkehrwalze</span><span class="p">,</span> <span class="n">Steckerbrett</span><span class="p">,</span> <span class="n">Zusatzwalze</span><span class="p">,</span> <span class="n">Walze</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Umkehrwalze"><a class="viewcode-back" href="../component.html#component.Umkehrwalze">[docs]</a><span class="k">class</span> <span class="nc">Umkehrwalze</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Represents an Umkehrwalze (UKW == reflector)</span>
+
+<span class="sd">.. csv-table:: Wheel Controls</span>
+<span class="sd">   :header: &quot;Item&quot;, &quot;Value&quot;</span>
+<span class="sd">   :widths: 30, 30</span>
+<span class="sd">   </span>
+<span class="sd">   *encryption*, forward only </span>
+<span class="sd">   *ring*, none</span>
+<span class="sd">   *notches*, none </span>
+
+<span class="sd">:param name: name of the Umkehrwalze</span>
+<span class="sd">:param wiring: wiring of the Umkehrwalze, positions related to the *alphabet*</span>
+<span class="sd">:param alphabet: unencoded alphabet to be used</span>
+<span class="sd">:param notify: notification function (e.g. print)</span>
+<span class="sd"> &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+  <span class="n">name</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">wiring</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">alphabet</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="o">=</span> <span class="n">notify</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Component</span><span class="p">]</span>  <span class="o">=</span> <span class="kc">None</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_prevComponent</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Component</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+  <span class="k">assert</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: At least 1 character in name required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="k">assert</span> <span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">: At least 1 character in alphabet required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span> <span class="o">=</span> <span class="n">alphabet</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+ 
+  <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+   <span class="n">wiringList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+   <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="n">wiring</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Source character </span><span class="si">{}</span><span class="s1"> not in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+    <span class="n">srcID</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">wiringList</span><span class="p">[</span><span class="n">srcID</span><span class="p">]</span> <span class="o">=</span> <span class="n">tgt</span>
+   <span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wiringList</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">=</span> <span class="n">wiring</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;Umkehrwalze&#39;</span><span class="p">:</span>
+   <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">wiring</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">!=</span> <span class="n">c</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: Character </span><span class="si">{}</span><span class="s1"> reflected to itself&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  
+ <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Component</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+ 
+ <span class="k">def</span> <span class="nf">nCC</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="n">ncc</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span><span class="p">):</span>
+   <span class="n">ncc</span> <span class="o">+=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">!=</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">ncc</span>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the name of the componenrt  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+ 
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">alphabet</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the alphabet of the engine</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfPositions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the number of positions, usually len(alphabet)</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the wiring</span>
+<span class="sd">  :setter: Sets wiring and reverse wiring</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span>
+
+ <span class="nd">@wiring</span><span class="o">.</span><span class="n">setter</span>
+ <span class="k">def</span> <span class="nf">wiring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newWiring</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">newWiring</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span><span class="p">,</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: len(wiring) = </span><span class="si">{}</span><span class="s1"> != len(alphabet) = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">newWiring</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span><span class="p">)</span>
+  <span class="n">_wiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+  <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">newWiring</span><span class="p">):</span> 
+   <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/wiring: Character </span><span class="si">{}</span><span class="s1"> not in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+   <span class="k">assert</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_wiring</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/wiring: Duplicate character </span><span class="si">{}</span><span class="s1"> in wiring&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+   <span class="n">_wiring</span> <span class="o">+=</span> <span class="n">c</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span> <span class="o">=</span> <span class="n">_wiring</span>
+  <span class="k">if</span> <span class="s1">&#39;_rwiring&#39;</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+   <span class="n">rwiringList</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span>
+   <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span><span class="p">):</span>
+    <span class="n">nr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">rwiringList</span><span class="p">[</span><span class="n">nr</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_rwiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rwiringList</span><span class="p">)</span>
+ 
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">nextComponent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the next component in the chain</span>
+<span class="sd">  :setter: Sets wiring and reverse wiring, if any </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span>
+  
+ <span class="nd">@nextComponent</span><span class="o">.</span><span class="n">setter</span>
+ <span class="k">def</span> <span class="nf">nextComponent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span> <span class="p">:</span> <span class="n">Component</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span> <span class="o">=</span> <span class="n">component</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">prevComponent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the previous component in the chain</span>
+<span class="sd">  :setter: Sets wiring and reverse wiring</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prevComponent</span>
+  
+ <span class="nd">@prevComponent</span><span class="o">.</span><span class="n">setter</span>
+ <span class="k">def</span> <span class="nf">prevComponent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span> <span class="p">:</span> <span class="n">Component</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;Umkehrwalze&#39;</span><span class="p">:</span>
+   <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is unidirectional&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_prevComponent</span> <span class="o">=</span> <span class="n">component</span>
+
+<div class="viewcode-block" id="Umkehrwalze.encode"><a class="viewcode-back" href="../component.html#component.Umkehrwalze.encode">[docs]</a> <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">forward</span> <span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">componentOnly</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Runs forward or backward through a component</span>
+
+<span class="sd">:param c: single character</span>
+<span class="sd">:param forward: direction</span>
+<span class="sd">:param componentOnly: do not go to next or previous component</span>
+<span class="sd">:returns: encoded character (mapped back to the alphabet) </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode(</span><span class="si">{}</span><span class="s1">)/</span><span class="si">{}</span><span class="s1">: len(</span><span class="si">{}</span><span class="s1">) != 1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode(</span><span class="si">{}</span><span class="s1">)/</span><span class="si">{}</span><span class="s1">: Character </span><span class="si">{}</span><span class="s1"> out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">if</span> <span class="s1">&#39;_ringstellung&#39;</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+   <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">state</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">if</span> <span class="n">forward</span><span class="p">:</span>
+   <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="n">state</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span><span class="p">]</span>            
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rwiring</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)])</span> <span class="o">-</span> <span class="n">state</span><span class="p">)</span>  <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span><span class="p">]</span>     
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.encode(</span><span class="si">{}</span><span class="s1">)/</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1"> =&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">output</span><span class="p">))</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">componentOnly</span><span class="p">:</span>
+   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">Umkehrwalze</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+   <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span> <span class="ow">and</span> <span class="n">forward</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+   <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prevComponent</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">forward</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prevComponent</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="Umkehrwalze.chain"><a class="viewcode-back" href="../component.html#component.Umkehrwalze.chain">[docs]</a> <span class="k">def</span> <span class="nf">chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Component</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]:</span>
+  <span class="sd">&quot;&quot;&quot;Creates a chain of visited components</span>
+
+<span class="sd">:param forward: direction</span>
+<span class="sd">:param _chain: current chain list (do not use)</span>
+<span class="sd">:returns: (component, forward) list</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">chainList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="n">lastComponent</span> <span class="o">=</span> <span class="bp">self</span>
+  <span class="k">while</span> <span class="n">lastComponent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">chainList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lastComponent</span><span class="p">,</span> <span class="n">forward</span> <span class="ow">or</span> <span class="n">lastComponent</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">Umkehrwalze</span><span class="p">))</span>
+   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.chain(</span><span class="si">{}</span><span class="s1">)/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">lastComponent</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">Umkehrwalze</span><span class="p">:</span>
+    <span class="n">lastComponent</span> <span class="o">=</span> <span class="n">lastComponent</span><span class="o">.</span><span class="n">nextComponent</span>
+    <span class="n">forward</span> <span class="o">=</span> <span class="kc">False</span>
+   <span class="k">elif</span> <span class="n">forward</span><span class="p">:</span>
+    <span class="n">lastComponent</span> <span class="o">=</span> <span class="n">lastComponent</span><span class="o">.</span><span class="n">nextComponent</span>
+   <span class="k">else</span><span class="p">:</span>
+    <span class="n">lastComponent</span> <span class="o">=</span> <span class="n">lastComponent</span><span class="o">.</span><span class="n">prevComponent</span>
+  <span class="k">return</span> <span class="n">chainList</span></div>
+  
+<div class="viewcode-block" id="Umkehrwalze.wiringToDict"><a class="viewcode-back" href="../component.html#component.Umkehrwalze.wiringToDict">[docs]</a> <span class="k">def</span> <span class="nf">wiringToDict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connectedOnly</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;Creates a dictionary starting from the wiring</span>
+
+<span class="sd">:param connectedOnly: include only characters not connected to itself</span>
+<span class="sd">:returns: dictionary of alphabet vs. wiring character</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">wiringDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">nc</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">):</span>
+   <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">nc</span><span class="p">]</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">connectedOnly</span><span class="p">:</span>
+    <span class="n">wiringDict</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">nc</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">wiringDict</span>  </div>
+
+<div class="viewcode-block" id="Umkehrwalze.dictToWiring"><a class="viewcode-back" href="../component.html#component.Umkehrwalze.dictToWiring">[docs]</a> <span class="k">def</span> <span class="nf">dictToWiring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wiringDict</span> <span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Creates a dictionary starting from the wiring</span>
+
+<span class="sd">:param wiringDict: dictionary of (at least connected) wirings</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="n">wiringDict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">src</span><span class="p">)]</span> <span class="o">=</span> <span class="n">tgt</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">)</span>  </div>
+
+ <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span> <span class="p">:</span> <span class="n">Component</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">==</span> <span class="n">component</span><span class="o">.</span><span class="n">name</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span> <span class="o">==</span> <span class="n">component</span><span class="o">.</span><span class="n">alphabet</span> \
+     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span> <span class="o">==</span> <span class="n">component</span><span class="o">.</span><span class="n">wiring</span> 
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="s1">&#39;class: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">name: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">alphabet: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">wiring: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+              <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wiring</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Steckerbrett"><a class="viewcode-back" href="../component.html#component.Steckerbrett">[docs]</a><span class="k">class</span> <span class="nc">Steckerbrett</span><span class="p">(</span><span class="n">Umkehrwalze</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Represents a Steckerbrett (plugboard)</span>
+
+<span class="sd">.. csv-table:: Wheel Controls</span>
+<span class="sd">   :header: &quot;Item&quot;, &quot;Value&quot;</span>
+<span class="sd">   :widths: 30, 30</span>
+<span class="sd">   </span>
+<span class="sd">   *encryption*, forward and backward</span>
+<span class="sd">   *ring*, none</span>
+<span class="sd">   *notches*, none </span>
+
+<span class="sd">:param name: name of the Steckerbrett</span>
+<span class="sd">:param wiring: wiring of the Steckerbrett, positions related to the *alphabet*</span>
+<span class="sd">:param alphabet: unencoded alphabet to be used</span>
+<span class="sd">:param notify: notification function (e.g. print)</span>
+<span class="sd"> &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+  <span class="n">name</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">wiring</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">alphabet</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_rwiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+  <span class="nb">super</span><span class="p">(</span><span class="n">Steckerbrett</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">wiring</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">notify</span><span class="p">)</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">Steckerbrett</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Mark 1&#39;</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">groupWiring</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">alphabet</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">alphabet</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]],</span> <span class="p">[</span><span class="n">wiring</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">wiring</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]]):</span>
+     <span class="k">for</span> <span class="n">ec</span> <span class="ow">in</span> <span class="n">groupWiring</span><span class="p">:</span>
+      <span class="k">assert</span> <span class="n">ec</span> <span class="ow">in</span> <span class="n">group</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: Character </span><span class="si">{}</span><span class="s1"> not in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">ec</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+   <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Mark 3&#39;</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">ec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">wiring</span><span class="p">):</span>
+     <span class="n">ecIndex</span> <span class="o">=</span> <span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">ec</span><span class="p">)</span>
+     <span class="k">assert</span> <span class="n">c</span> <span class="o">==</span> <span class="n">ec</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="n">wiring</span><span class="p">[</span><span class="n">ecIndex</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: Invalid connection </span><span class="si">{}</span><span class="s1"> -&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">ec</span><span class="p">)</span>
+ 
+<div class="viewcode-block" id="Steckerbrett.Mark_1"><a class="viewcode-back" href="../component.html#component.Steckerbrett.Mark_1">[docs]</a> <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">Mark_1</span><span class="p">(</span>
+  <span class="n">replacement</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+  <span class="n">alphabet</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Steckerbrett</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Random Initialization of a Mark 1 Steckerbrett (`crytomuseumSB`_)</span>
+<span class="sd">  The contacts are splitted into 2 separated groups (sockets 1-13 and sockets 14-26)</span>
+<span class="sd">  </span>
+<span class="sd">.. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="n">alphabet</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">alphabet</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]]:</span>
+   <span class="k">while</span> <span class="kc">True</span><span class="p">:</span> 
+    <span class="n">actWiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)))</span>
+    <span class="n">hasReplacement</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">replacement</span><span class="p">:</span>
+     <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">ec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">actWiring</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">ec</span><span class="p">:</span>
+       <span class="n">hasReplacement</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">hasReplacement</span><span class="p">:</span>
+     <span class="n">wiring</span> <span class="o">+=</span> <span class="n">actWiring</span>
+     <span class="k">break</span>
+  <span class="k">return</span> <span class="n">Steckerbrett</span><span class="p">(</span><span class="s1">&#39;Mark 1&#39;</span><span class="p">,</span> <span class="n">wiring</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">notify</span><span class="p">)</span></div>
+     
+<div class="viewcode-block" id="Steckerbrett.Mark_2"><a class="viewcode-back" href="../component.html#component.Steckerbrett.Mark_2">[docs]</a> <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">Mark_2</span><span class="p">(</span>
+  <span class="n">replacement</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+  <span class="n">alphabet</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Steckerbrett</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Random Initialization of a Mark 2 Steckerbrett (`crytomuseumSB`_)</span>
+<span class="sd">  The 52 contacts are connected in unlimited fashion</span>
+<span class="sd">  </span>
+<span class="sd">.. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+  <span class="k">while</span> <span class="kc">True</span><span class="p">:</span> 
+   <span class="n">actWiring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)))</span>
+   <span class="n">hasReplacement</span> <span class="o">=</span> <span class="kc">False</span>
+   <span class="k">if</span> <span class="ow">not</span> <span class="n">replacement</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">ec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">actWiring</span><span class="p">):</span>
+     <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">ec</span><span class="p">:</span>
+      <span class="n">hasReplacement</span> <span class="o">=</span> <span class="kc">False</span>
+   <span class="k">if</span> <span class="ow">not</span> <span class="n">hasReplacement</span><span class="p">:</span>
+    <span class="n">wiring</span> <span class="o">+=</span> <span class="n">actWiring</span>
+    <span class="k">break</span>
+  <span class="k">return</span> <span class="n">Steckerbrett</span><span class="p">(</span><span class="s1">&#39;Mark 2&#39;</span><span class="p">,</span> <span class="n">wiring</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">notify</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Steckerbrett.Mark_3"><a class="viewcode-back" href="../component.html#component.Steckerbrett.Mark_3">[docs]</a> <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">Mark_3</span><span class="p">(</span>
+  <span class="n">nConnections</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
+  <span class="n">alphabet</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Steckerbrett</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Random Initialization of a Mark 3 Steckerbrett (`crytomuseumSB`_)</span>
+<span class="sd">  The 26 contacts are cross-connected, i.e. MU is combined with UM</span>
+<span class="sd">  </span>
+<span class="sd">.. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="n">nConnections</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">nConnections</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: 0 &lt; nConnections = </span><span class="si">{}</span><span class="s1"> &lt; </span><span class="si">{}</span><span class="s1"> required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Steckerbrett</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">nConnections</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="n">sources</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">nConnections</span><span class="p">))</span>
+  <span class="n">targetAlphabet</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">alphabet</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+    <span class="n">targetAlphabet</span> <span class="o">+=</span> <span class="n">c</span>
+  <span class="n">targets</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">targetAlphabet</span><span class="p">,</span> <span class="n">nConnections</span><span class="p">))</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+   <span class="n">srcIndex</span> <span class="o">=</span> <span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+   <span class="n">tgtIndex</span> <span class="o">=</span> <span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span>
+   <span class="n">wiring</span><span class="p">[</span><span class="n">srcIndex</span><span class="p">]</span> <span class="o">=</span> <span class="n">tgt</span>
+   <span class="n">wiring</span><span class="p">[</span><span class="n">tgtIndex</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span>
+  <span class="k">return</span> <span class="n">Steckerbrett</span><span class="p">(</span><span class="s1">&#39;Mark 3&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wiring</span><span class="p">),</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">notify</span><span class="p">)</span></div>
+  
+<div class="viewcode-block" id="Steckerbrett.isMark1"><a class="viewcode-back" href="../component.html#component.Steckerbrett.isMark1">[docs]</a> <span class="k">def</span> <span class="nf">isMark1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Checks, if the steckerbrett is of type Mark1</span>
+
+<span class="sd">:returns: indicator</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">halfAlphabet2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">]:</span>
+   <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">halfAlphabet2</span><span class="p">:</span>
+    <span class="k">return</span> <span class="kc">False</span>
+  <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Steckerbrett.isMark3"><a class="viewcode-back" href="../component.html#component.Steckerbrett.isMark3">[docs]</a> <span class="k">def</span> <span class="nf">isMark3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Checks, if the steckerbrett is of type Mark3</span>
+<span class="sd">  </span>
+<span class="sd">:returns: indicator</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rwiring</span></div>
+  
+<div class="viewcode-block" id="Steckerbrett.nConnections"><a class="viewcode-back" href="../component.html#component.Steckerbrett.nConnections">[docs]</a> <span class="k">def</span> <span class="nf">nConnections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Counts the number of connections of a steckerbrett</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">nConnections2</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">):</span>
+   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">!=</span> <span class="n">c</span><span class="p">:</span>
+    <span class="n">nConnections2</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="k">return</span> <span class="n">nConnections2</span> <span class="o">//</span> <span class="mi">2</span></div>
+
+ <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">_replaceChar</span><span class="p">(</span><span class="n">actStr</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">newStr</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">actStr</span><span class="p">[:</span><span class="n">index</span><span class="p">]</span> <span class="o">+</span> <span class="n">newStr</span> <span class="o">+</span> <span class="n">actStr</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+
+<div class="viewcode-block" id="Steckerbrett.clearMark3Setting"><a class="viewcode-back" href="../component.html#component.Steckerbrett.clearMark3Setting">[docs]</a> <span class="k">def</span> <span class="nf">clearMark3Setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Clear one setting of a Steckerbrett (`crytomuseumSB`_)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.clearMark3Setting: </span><span class="si">{}</span><span class="s1"> is not a single character&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.clearMark3Setting: </span><span class="si">{}</span><span class="s1"> is not in alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+  <span class="n">srcIndex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+  <span class="n">tgtIndex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">srcIndex</span><span class="p">])</span>
+  <span class="k">if</span> <span class="n">srcIndex</span> <span class="o">==</span> <span class="n">tgtIndex</span><span class="p">:</span>
+   <span class="k">return</span>
+  <span class="k">assert</span> <span class="n">c</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">tgtIndex</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.clearMark3Setting: </span><span class="si">{}</span><span class="s1"> is not in Mark 3 steckerbrett&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replaceChar</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="n">srcIndex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[</span><span class="n">srcIndex</span><span class="p">])</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replaceChar</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="n">tgtIndex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[</span><span class="n">tgtIndex</span><span class="p">])</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">=</span> <span class="n">wiring</span></div>
+
+<div class="viewcode-block" id="Steckerbrett.addMark3Setting"><a class="viewcode-back" href="../component.html#component.Steckerbrett.addMark3Setting">[docs]</a> <span class="k">def</span> <span class="nf">addMark3Setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tgt</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Add one setting to a Steckerbrett (`crytomuseumSB`_)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.addMark3Setting: Either src = </span><span class="si">{}</span><span class="s1"> and tgt = </span><span class="si">{}</span><span class="s1"> are not single characters&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="ow">and</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.addMark3Setting: Either src = </span><span class="si">{}</span><span class="s1"> and tgt = </span><span class="si">{}</span><span class="s1"> is not in alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">tgt</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">clearMark3Setting</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+  <span class="n">srcIndex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+  <span class="n">tgtIndex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">tgtIndex</span><span class="p">]</span> <span class="ow">and</span> <span class="n">tgt</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">srcIndex</span><span class="p">]:</span>
+   <span class="k">return</span>
+  <span class="k">assert</span> <span class="n">src</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">srcIndex</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.addMark3Setting: src = </span><span class="si">{}</span><span class="s1"> is already connected&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">tgt</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="p">[</span><span class="n">tgtIndex</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.addMark3Setting: tgt = </span><span class="si">{}</span><span class="s1"> is already connected&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replaceChar</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="n">srcIndex</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replaceChar</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="n">tgtIndex</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">=</span> <span class="n">wiring</span></div>
+
+<div class="viewcode-block" id="Steckerbrett.exchangeMark3Setting"><a class="viewcode-back" href="../component.html#component.Steckerbrett.exchangeMark3Setting">[docs]</a> <span class="k">def</span> <span class="nf">exchangeMark3Setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c1</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">c2</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Exchanges 2 settings of a Steckerbrett (`crytomuseumSB`_)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">c2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.exchangeMark3Setting: Either src = </span><span class="si">{}</span><span class="s1"> and tgt = </span><span class="si">{}</span><span class="s1"> are not single characters&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="ow">and</span> <span class="n">c2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.exchangeMark3Setting: Either src = </span><span class="si">{}</span><span class="s1"> and tgt = </span><span class="si">{}</span><span class="s1"> is not in alphabet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">c1</span> <span class="o">==</span> <span class="n">c2</span><span class="p">:</span>
+   <span class="k">return</span>
+  <span class="n">c1Index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c1</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[</span><span class="n">c1Index</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.exchangeMark3Setting: c1 = </span><span class="si">{}</span><span class="s1"> is unconnected&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c1</span><span class="p">)</span>
+  <span class="n">c2Index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c2</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">c2</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">[</span><span class="n">c2Index</span><span class="p">],</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.exchangeMark3Setting: c2 = </span><span class="si">{}</span><span class="s1"> is unconnected&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replaceChar</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="n">c1Index</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span>
+  <span class="n">wiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replaceChar</span><span class="p">(</span><span class="n">wiring</span><span class="p">,</span> <span class="n">c2Index</span><span class="p">,</span> <span class="n">c1</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">wiring</span> <span class="o">=</span> <span class="n">wiring</span></div>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">rwiring</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the reverse wiring</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rwiring</span>
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Steckerbrett</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">reverse wiring: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rwiring</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Zusatzwalze"><a class="viewcode-back" href="../component.html#component.Zusatzwalze">[docs]</a><span class="k">class</span> <span class="nc">Zusatzwalze</span><span class="p">(</span><span class="n">Steckerbrett</span><span class="p">)</span> <span class="p">:</span> 
+ <span class="sd">&quot;&quot;&quot;Represents an Zusatzwalze (ZW == extra rotor)</span>
+
+<span class="sd">.. csv-table:: Wheel Controls</span>
+<span class="sd">   :header: &quot;Item&quot;, &quot;Value&quot;</span>
+<span class="sd">   :widths: 30, 30</span>
+<span class="sd">   </span>
+<span class="sd">   *encryption*, forward and backward</span>
+<span class="sd">   *ring*, yes</span>
+<span class="sd">   *notches*, none </span>
+
+<span class="sd">:param name: name of the Zusatzwalze</span>
+<span class="sd">:param wiring: wiring of the Zusatzwalze, positions related to the *alphabet*</span>
+<span class="sd">:param alphabet: unencoded alphabet to be used</span>
+<span class="sd">:param notify: notification function (e.g. print)</span>
+<span class="sd"> &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+  <span class="n">name</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">wiring</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">ringstellung</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">alphabet</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Initialization</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="nb">super</span><span class="p">(</span><span class="n">Zusatzwalze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">wiring</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">notify</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_prevComponent</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Component</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+  <span class="k">if</span> <span class="n">ringstellung</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ringstellung</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+   <span class="k">assert</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">ringstellung</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the ringstellung</span>
+<span class="sd">  :setter: Sets the ringstellung</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span>
+  
+ <span class="nd">@ringstellung</span><span class="o">.</span><span class="n">setter</span>
+ <span class="k">def</span> <span class="nf">ringstellung</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ringstellung</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ringstellung</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.ringstellung </span><span class="si">{}</span><span class="s1">: 1 character expected, </span><span class="si">{}</span><span class="s1"> got&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">ringstellung</span><span class="p">)</span>
+   <span class="k">assert</span> <span class="n">ringstellung</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span> <span class="o">=</span> <span class="n">ringstellung</span>
+
+ <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span> <span class="p">:</span> <span class="n">Component</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Zusatzwalze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">component</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span> <span class="o">==</span> <span class="n">component</span><span class="o">.</span><span class="n">_ringstellung</span>
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Zusatzwalze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">ringstellung: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Walze"><a class="viewcode-back" href="../component.html#component.Walze">[docs]</a><span class="k">class</span> <span class="nc">Walze</span><span class="p">(</span><span class="n">Zusatzwalze</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Represents a Walze (rotor)</span>
+
+<span class="sd">.. csv-table:: Wheel Controls</span>
+<span class="sd">   :header: &quot;Item&quot;, &quot;Value&quot;</span>
+<span class="sd">   :widths: 30, 30</span>
+<span class="sd">   </span>
+<span class="sd">   *encryption*, forward and backward</span>
+<span class="sd">   *ring*, yes</span>
+<span class="sd">   *notches*, yes </span>
+
+<span class="sd">:param name: name of the walze</span>
+<span class="sd">:param wiring: wiring of the walze, positions related to the *alphabet*</span>
+<span class="sd">:param ringstellung: visible character at the beginning, position related to the *alphabet*</span>
+<span class="sd">:param notches: visible characters for the notches, positions related to the *alphabet*</span>
+<span class="sd">:param alphabet: unencoded alphabet to be used</span>
+<span class="sd">:param notify: notification function (e.g. print)</span>
+
+<span class="sd"> &quot;&quot;&quot;</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+  <span class="n">name</span>  <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">wiring</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">ringstellung</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+  <span class="n">notches</span> <span class="p">:</span> <span class="nb">str</span>  <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+  <span class="n">alphabet</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">stdAlphabet</span><span class="p">,</span> 
+  <span class="n">notify</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Initialization</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="nb">super</span><span class="p">(</span><span class="n">Walze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">wiring</span><span class="p">,</span> <span class="n">ringstellung</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">notify</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">notches</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: At least 1 notch required&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_notches</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+  <span class="k">for</span> <span class="n">notch</span> <span class="ow">in</span> <span class="n">notches</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">notch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: Notch </span><span class="si">{}</span><span class="s1"> out of range&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">notch</span><span class="p">)</span>
+   <span class="k">assert</span> <span class="n">notch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notches</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: Duplicate notch </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">notch</span><span class="p">)</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_notches</span> <span class="o">+=</span> <span class="n">notch</span>
+   
+<div class="viewcode-block" id="Walze.stepN"><a class="viewcode-back" href="../component.html#component.Walze.stepN">[docs]</a> <span class="k">def</span> <span class="nf">stepN</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span> <span class="p">:</span> <span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Steps the Walze n times</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">: n == </span><span class="si">{}</span><span class="s1"> &lt;= 0&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Walze.step"><a class="viewcode-back" href="../component.html#component.Walze.step">[docs]</a> <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Steps the Walze and inititiates of the next Walze if available</span>
+<span class="sd">  </span>
+<span class="sd">   III	II	I	&lt;-- wheel order</span>
+<span class="sd">   A	D	O</span>
+<span class="sd">   A	D	P</span>
+<span class="sd">   A	D	Q</span>
+<span class="sd">   A	E	R	&lt;-- 1st step of middle wheel</span>
+<span class="sd">   B	F	S	&lt;-- 2nd step of middle wheel</span>
+<span class="sd">   B	F	T</span>
+<span class="sd">   B	F	U  </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">notchFound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notches</span>
+  <span class="k">if</span> <span class="n">notchFound</span><span class="p">:</span>
+   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;Walze&#39;</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_nextComponent</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphabet</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numberOfPositions</span><span class="p">]</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.step </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">, notch = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ringstellung</span><span class="p">,</span> <span class="n">notchFound</span><span class="p">))</span></div>
+
+ <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span> <span class="p">:</span> <span class="n">Component</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Walze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">component</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notches</span> <span class="o">==</span> <span class="n">component</span><span class="o">.</span><span class="n">_notches</span>
+
+ <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Walze</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">notches: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_notches</span><span class="p">)</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">notches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  :getter: Returns the notches</span>
+<span class="sd">  :setter: None</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notches</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Reinhard März.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

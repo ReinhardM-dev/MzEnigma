@@ -1,14 +1,14 @@
 {
   "header": {
     "comment": "eric project file for project MzEnigma",
-    "copyright": "Copyright (C) 2021 Reinhard M\u00e4rz, ",
-    "saved": "2021-11-18, 17:52:05"
+    "copyright": "Copyright (C) 2022 Reinhard M\u00e4rz, ",
+    "saved": "2022-03-23, 17:20:08"
   },
   "project": {
     "AUTHOR": "Reinhard M\u00e4rz",
     "CHECKERSPARMS": {},
     "DESCRIPTION": "",
-    "DOCSTRING": "sphinxdoc",
+    "DOCSTRING": "",
     "DOCUMENTATIONPARMS": {},
     "EMAIL": "",
     "EOL": 1,
@@ -16,18 +16,16 @@
       "*.e4p": "OTHERS",
       "*.epj": "OTHERS",
       "*.idl": "INTERFACES",
+      "*.js": "SOURCES",
       "*.md": "OTHERS",
       "*.proto": "PROTOCOLS",
       "*.py": "SOURCES",
       "*.py3": "SOURCES",
       "*.pyw": "SOURCES",
       "*.pyw3": "SOURCES",
-      "*.qm": "TRANSLATIONS",
-      "*.qrc": "RESOURCES",
+      "*.rb": "SOURCES",
       "*.rst": "OTHERS",
-      "*.ts": "TRANSLATIONS",
       "*.txt": "OTHERS",
-      "*.ui": "FORMS",
       "GNUmakefile": "OTHERS",
       "Makefile": "OTHERS",
       "README": "OTHERS",
@@ -52,14 +50,14 @@
       "MakeTarget": "",
       "MakeTestOnly": true
     },
-    "MIXEDLANGUAGE": false,
+    "MIXEDLANGUAGE": true,
     "OTHERS": [
       ".gitignore"
     ],
     "OTHERTOOLSPARMS": {},
     "PACKAGERSPARMS": {},
     "PROGLANGUAGE": "Python3",
-    "PROJECTTYPE": "PyQt5",
+    "PROJECTTYPE": "Console",
     "PROJECTTYPESPECIFICDATA": {},
     "PROTOCOLS": [],
     "RCCPARAMS": {
@@ -77,7 +75,19 @@
       "test/test_components.py",
       "test/test_enigma.py",
       "MzEnigma/analyzeEnigma.py",
-      "test/test_analyzeEnigma.py"
+      "test/test_analyzeEnigma.py",
+      "doc/conf.py",
+      "doc/enigma.rst",
+      "doc/index.rst",
+      "doc/make.bat",
+      "doc/Makefile",
+      "doc/requirements.txt",
+      "doc/component.rst",
+      "doc/analyzeEnigma.rst",
+      "setup.py",
+      "license.gpl3",
+      "MzEnigma/readme.rst",
+      "doc/predefined.rst"
     ],
     "SPELLEXCLUDES": "",
     "SPELLLANGUAGE": "en_US",
