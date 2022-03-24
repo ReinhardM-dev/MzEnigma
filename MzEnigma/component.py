@@ -22,8 +22,8 @@ class Umkehrwalze(object):
    *ring*, none
    *notches*, none 
 
-:param name: name of the walze
-:param wiring: wiring of the walze, positions related to the *alphabet*
+:param name: name of the Umkehrwalze
+:param wiring: wiring of the Umkehrwalze, positions related to the *alphabet*
 :param alphabet: unencoded alphabet to be used
 :param notify: notification function (e.g. print)
  """
@@ -64,18 +64,33 @@ class Umkehrwalze(object):
   
  @property
  def name(self) -> str:
+  """
+  :getter: Returns the name of the componenrt  :setter: None
+  """
   return self._name
  
  @property
  def alphabet(self) -> str:
+  """
+  :getter: Returns the alphabet of the engine
+  :setter: None
+  """
   return self._alphabet
 
  @property
  def numberOfPositions(self) -> int:
+  """
+  :getter: Returns the number of positions, usually len(alphabet)
+  :setter: None
+  """
   return self._numberOfPositions
 
  @property
  def wiring(self) -> str:
+  """
+  :getter: Returns the wiring
+  :setter: Sets wiring and reverse wiring
+  """
   return self._wiring
 
  @wiring.setter
@@ -96,6 +111,10 @@ class Umkehrwalze(object):
  
  @property
  def nextComponent(self) -> str:
+  """
+  :getter: Returns the next component in the chain
+  :setter: Sets wiring and reverse wiring, if any 
+  """
   return self._nextComponent
   
  @nextComponent.setter
@@ -104,6 +123,10 @@ class Umkehrwalze(object):
 
  @property
  def prevComponent(self) -> str:
+  """
+  :getter: Returns the previous component in the chain
+  :setter: Sets wiring and reverse wiring
+  """
   return self._prevComponent
   
  @prevComponent.setter
@@ -195,7 +218,7 @@ class Umkehrwalze(object):
               self.__class__.__name__, self._name, self._alphabet, self._wiring)
 
 class Steckerbrett(Umkehrwalze):
- """Represents an Umkehrwalze (UKW == reflector)
+ """Represents a Steckerbrett (plugboard)
 
 .. csv-table:: Wheel Controls
    :header: "Item", "Value"
@@ -205,8 +228,8 @@ class Steckerbrett(Umkehrwalze):
    *ring*, none
    *notches*, none 
 
-:param name: name of the walze
-:param wiring: wiring of the walze, positions related to the *alphabet*
+:param name: name of the Steckerbrett
+:param wiring: wiring of the Steckerbrett, positions related to the *alphabet*
 :param alphabet: unencoded alphabet to be used
 :param notify: notification function (e.g. print)
  """
@@ -233,10 +256,10 @@ class Steckerbrett(Umkehrwalze):
   alphabet : str = stdAlphabet, 
   notify : Optional[Callable[[str], None]] = None) -> Steckerbrett:
   """
-  Random Initialization of a Mark 1 Steckerbrett (`_crytomuseumSB`_)
+  Random Initialization of a Mark 1 Steckerbrett (`crytomuseumSB`_)
   The contacts are splitted into 2 separated groups (sockets 1-13 and sockets 14-26)
   
-  .. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm
+.. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm
   """
   wiring = str()
   for group in [alphabet[:len(alphabet)//2], alphabet[len(alphabet)//2:]]:
@@ -258,10 +281,10 @@ class Steckerbrett(Umkehrwalze):
   alphabet : str = stdAlphabet, 
   notify : Optional[Callable[[str], None]] = None) -> Steckerbrett:
   """
-  Random Initialization of a Mark 2 Steckerbrett (`_crytomuseumSB`_)
+  Random Initialization of a Mark 2 Steckerbrett (`crytomuseumSB`_)
   The 52 contacts are connected in unlimited fashion
   
-  .. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm
+.. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm
   """
   wiring = str()
   while True: 
@@ -282,10 +305,10 @@ class Steckerbrett(Umkehrwalze):
   alphabet : str = stdAlphabet, 
   notify : Optional[Callable[[str], None]] = None) -> Steckerbrett:
   """
-  Random Initialization of a Mark 3 Steckerbrett (`_crytomuseumSB`_)
+  Random Initialization of a Mark 3 Steckerbrett (`crytomuseumSB`_)
   The 26 contacts are cross-connected, i.e. MU is combined with UM
   
-  .. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm
+.. _crytomuseumSB: https://www.cryptomuseum.com/crypto/enigma/i/sb.htm
   """
   assert nConnections >= 0 and nConnections <= len(alphabet) // 2, '{}: 0 < nConnections = {} < {} required'.format(Steckerbrett.__class__.__name__, nConnections, len(alphabet) // 2)
   sources = ''.join(random.sample(alphabet, nConnections))
@@ -303,6 +326,11 @@ class Steckerbrett(Umkehrwalze):
   return Steckerbrett('Mark 3', ''.join(wiring), alphabet, notify)
   
  def isMark1(self) -> bool:
+  """
+  Checks, if the steckerbrett is of type Mark1
+
+:returns: indicator
+  """
   halfAlphabet2 = self.alphabet[len(self.alphabet)//2:]
   for c in self.alphabet[:len(self.alphabet)//2]:
    if c not in halfAlphabet2:
@@ -310,6 +338,11 @@ class Steckerbrett(Umkehrwalze):
   return True
 
  def isMark3(self) -> bool:
+  """
+  Checks, if the steckerbrett is of type Mark3
+  
+:returns: indicator
+  """
   return self.wiring == self.rwiring
   
  def nConnections(self) -> int:
@@ -328,7 +361,7 @@ class Steckerbrett(Umkehrwalze):
 
  def clearMark3Setting(self, c : str) -> None:
   """
-  Clear one setting of a Steckerbrett (`_crytomuseumSB`_)
+  Clear one setting of a Steckerbrett (`crytomuseumSB`_)
   """
   assert len(c) == 1, '{}.clearMark3Setting: {} is not a single character'.format(self.__class__.__name__, c)
   assert c in self.alphabet, '{}.clearMark3Setting: {} is not in alphabet'.format(self.__class__.__name__, c)
@@ -344,7 +377,7 @@ class Steckerbrett(Umkehrwalze):
 
  def addMark3Setting(self, src : str, tgt : str) -> None:
   """
-  Add one setting to a Steckerbrett (`_crytomuseumSB`_)
+  Add one setting to a Steckerbrett (`crytomuseumSB`_)
   """
   assert len(src) == 1 and len(tgt) == 1, '{}.addMark3Setting: Either src = {} and tgt = {} are not single characters'.format(
              self.__class__.__name__, src, tgt)
@@ -365,7 +398,7 @@ class Steckerbrett(Umkehrwalze):
 
  def exchangeMark3Setting(self, c1 : str, c2 : str) -> None:
   """
-  Exchanges 2 settings of a Steckerbrett (`_crytomuseumSB`_)
+  Exchanges 2 settings of a Steckerbrett (`crytomuseumSB`_)
   """
   assert len(c1) == 1 and len(c2) == 1, '{}.exchangeMark3Setting: Either src = {} and tgt = {} are not single characters'.format(
              self.__class__.__name__, c1, c2)
@@ -384,6 +417,9 @@ class Steckerbrett(Umkehrwalze):
 
  @property
  def rwiring(self) -> str:
+  """
+  :getter: Returns the reverse wiring
+  """
   return self._rwiring
 
  def __repr__(self) -> str:
@@ -400,8 +436,8 @@ class Zusatzwalze(Steckerbrett) :
    *ring*, yes
    *notches*, none 
 
-:param name: name of the walze
-:param wiring: wiring of the walze, positions related to the *alphabet*
+:param name: name of the Zusatzwalze
+:param wiring: wiring of the Zusatzwalze, positions related to the *alphabet*
 :param alphabet: unencoded alphabet to be used
 :param notify: notification function (e.g. print)
  """
@@ -425,6 +461,10 @@ class Zusatzwalze(Steckerbrett) :
 
  @property
  def ringstellung(self) -> str:
+  """
+  :getter: Returns the ringstellung
+  :setter: Sets the ringstellung
+  """
   return self._ringstellung
   
  @ringstellung.setter
@@ -513,4 +553,8 @@ class Walze(Zusatzwalze):
 
  @property
  def notches(self) -> str:
+  """
+  :getter: Returns the notches
+  :setter: None
+  """
   return self._notches

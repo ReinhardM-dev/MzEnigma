@@ -7,12 +7,18 @@ import random
 import csv
 import os
 import math
-import difflib
 
 import MzEnigma
 
 class SpruchScoring(object):
+ """Toolbox for scoring of a spruch. In the background, this object holds
+ dictionary with character n-grams. By default, the dictionary with the 
+ longest n-gram is used.
  
+ :param language: language to be used for ngram scoring (required)
+ :param normalize: normalize ngram values with respect to maxScore 
+ :param logarithmic: 10*math.log10(ngramDict[score]/minScore)
+  """
  def __init__(self, language : str, normalize : bool = True, logarithmic : bool = False):
   self.resPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Resources') 
   assert language in ['english', 'german'], "{}: Language {} not supported, use 'english' or 'german'".format(self.__class__.__name__, language)
@@ -38,6 +44,11 @@ class SpruchScoring(object):
   self.saThreshold = 0.01
   
  def setSATemperature(self, spruch : str, numberOfChars : int = 0) -> float:
+  """Enables the temperature for simulated annealing (used by `newNgramScore`)
+ 
+ :param spruch: spruch of typical length to be scored (required)
+ :param numberOfChars: n-gram dictionary to be used (default: longest n-grams) 
+  """
   nSpruch = len(spruch)
   if nSpruch == 0:
    self.saTemperature = 0
@@ -62,6 +73,13 @@ class SpruchScoring(object):
   return self.saTemperature
 
  def ngramScore(self, spruch : str, numberOfChars : int = 0, validChars : str = MzEnigma.stdAlphabet) -> float:
+  """N-gram score of a spruch
+ 
+ :param spruch: spruch to be scored (required)
+ :param numberOfChars: n-gram dictionary to be used (default: longest n-grams) 
+ :param validChars: alphabet of the spruch
+ :returns: N-gram score
+  """
   _score = 0
   if numberOfChars < 1:
    assert 'numberOfChars' in vars(self), '{}.ngramScore: no ngrams loaded'.format(self.__class__.__name__)
@@ -80,6 +98,14 @@ class SpruchScoring(object):
   return _score/(len(spruch) - nChars + 1)
 
  def newNgramScore(self, spruch : str, currentScore : float, validChars : str = MzEnigma.stdAlphabet) -> float:
+  """Compares the N-gram score of a spruch with the currentScore. 
+  Uses simulated if enabled.
+ 
+ :param spruch: spruch to be scored (required)
+ :param currentScore: current score (required)
+ :param validChars: alphabet of the spruch
+ :returns: N-gram score
+  """
   score = self.ngramScore(spruch, validChars = validChars)
   diffScore = score - currentScore
   if diffScore >= 0:
@@ -93,12 +119,19 @@ class SpruchScoring(object):
   return score
 
  @staticmethod
- def indexOfCoincidence(spruch : str, alphabet = MzEnigma.stdAlphabet) -> float:
-  nAlphabet = len(alphabet)
+ def indexOfCoincidence(spruch : str, validChars : str = MzEnigma.stdAlphabet) -> float:
+  """index of coincidence of a spruch,
+  i.e. relative frequency of characters independent of the underlying language 
+ 
+ :param spruch: spruch to be scored (required)
+ :param validChars: alphabet of the spruch
+ :returns: index of coincidence
+  """
+  nAlphabet = len(validChars)
   nSpruch = len(spruch)
   iocList = nAlphabet * [0.0]
   for c in spruch:
-   iocList[alphabet.index(c)] += 1
+   iocList[validChars.index(c)] += 1
   ioc = 0
   for n in range(nAlphabet):
    ioc += iocList[n] * (iocList[n] - 1)
@@ -134,7 +167,7 @@ class SpruchScoring(object):
   return '{}\n language: {}\n normalized: {}\n logarithmic: {}'.format(self.__class__.__name__, self.language, self.normalize, self.logarithmic)
 
 class Enigma(object):
- """Represents an Enigma with all accessories. 
+ """Represents an Enigma engine with all available accessories. 
     If no umkehrwalzen are defined, the encryption is not symmetric any more !
  
  :param model: model of the Enigma (required)
@@ -152,9 +185,6 @@ class Enigma(object):
   numberOfWalzen : int = 0, 
   steckerbrett : Optional[MzEnigma.Steckerbrett] = None, 
   zusatzwalzen : List[MzEnigma.Zusatzwalze] = None) -> None:
-  """
-  Initialization
-  """
   assert model, '{}: At least 1 character in model required'.format(self.__class__.__name__)
   self._model = model
   assert walzen, '{}: At least 1 walze required'.format(self.__class__.__name__)
@@ -199,30 +229,58 @@ class Enigma(object):
   
  @property
  def alphabet(self) -> str:
+  """
+  :getter: Returns the alphabet of the engine
+  :setter: None
+  """
   return self._walzen[0].alphabet
 
  @property
  def model(self) -> str:
+  """
+  :getter: Returns the name of the engine
+  :setter: None
+  """
   return self._model
 
  @property
  def umkehrwalzen(self) -> List[MzEnigma.Umkehrwalze]:
+  """
+  :getter: Returns a list of Umkehrwalzen
+  :setter: None
+  """
   return self._umkehrwalzen
 
  @property
  def walzen(self) -> List[MzEnigma.Walze]:
+  """
+  :getter: Returns a list of Walzen
+  :setter: None
+  """
   return self._walzen
 
  @property
  def numberOfWalzen(self) -> int:
+  """
+  :getter: Returns a number of Walzen built-in at the engine's operation
+  :setter: None
+  """
   return self._numberOfWalzen
 
  @property
- def steckerbrett(self) -> int:
+ def steckerbrett(self) -> Optional[int]:
+  """
+  :getter: Returns the steckerbrett if any
+  :setter: None
+  """
   return self._steckerbrett
 
  @property
- def zusatzwalzen(self) -> List[MzEnigma.Zusatzwalze]:
+ def zusatzwalzen(self) -> Optional[List[MzEnigma.Zusatzwalze]]:
+  """
+  :getter: Returns a list of Zusatzwalzen if any
+  :setter: None
+  """
   return self._zusatzwalzen
   
  def __eq__(self, enigma : Enigma) -> bool:
@@ -339,9 +397,20 @@ class Tagesschluessel(object):
    umkehrwalze : Optional[MzEnigma.Umkehrwalze] = None, 
    walzen : List[MzEnigma.Walze] = None, 
    tagesWalzenStellungen : Optional[str] = None, 
-   zusatzwalze : Optional[MzEnigma.Zusatzwalze] = None):
+   zusatzwalze : Optional[MzEnigma.Zusatzwalze] = None) -> None:
+  """Changes certain elements of a Tagesschluessel
+ 
+:param currentTagesschluessel: current Tagesschluessel (required)
+:param tagesWalzenStellungen: changed Tageswalzenstellungen to be used (if undefined, randomly selected)
+:param umkehrwalze: 'Umkehrwalze' (if undefined, used from currentTagesschluessel)
+:param walzen: List of type 'Walze' (if undefined, used from currentTagesschluessel)
+:param zusatzwalze: 'Zusatzwalze' (if undefined, used from currentTagesschluessel)
+:returns: Tagesschluessel object
+   """
   if umkehrwalze is None:
    umkehrwalze = currentTagesschluessel.umkehrwalze
+  if walzen is None:
+   walzen = currentTagesschluessel.walzen
   if zusatzwalze is None:
    zusatzwalze = currentTagesschluessel.zusatzwalze
   return cls(
@@ -577,6 +646,10 @@ class Tagesschluessel(object):
   
  @property
  def alphabet(self) -> str:
+  """
+  :getter: Returns the alphabet of the engine
+  :setter: None
+  """
   return self.enigma.alphabet
 
  def __eq__(self, tagesschluessel : Tagesschluessel) -> bool:

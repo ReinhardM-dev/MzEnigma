@@ -1,10 +1,28 @@
+"""
+.. _CrypTool: https://www.cryptool.org/en/documentation/ctbook/
+.. _Decrypted Secrets: https://link.springer.com/book/10.1007/978-3-540-48121-8
+
+The cryptoanalysis methods implemented here include:
+
+.. csv-table:: 
+   :header: "Author", "Requirement", "See ..."
+   :widths: 15, 30, 30
+   
+   *Rejewski*, encoded Spruchschluessel, `Decrypted Secrets`_
+   *Turing*, unencoded crib, `Decrypted Secrets`_
+   *Gillogly*, language statistics, `CrypTool`_
+   
+None of these methods always succeed. As a rule of thumb, the
+Turing and Gillogly attacks require at least 30 characters
+to get sufficient analysis results.
+"""
+
 from __future__ import annotations
-from typing import Optional, Callable, Dict, List, Tuple, Set
+from typing import Optional, Callable, Dict, List, Tuple
 
 import copy
 import random
 import itertools
-import hashlib
 import pickle
 import os.path
 
@@ -13,12 +31,13 @@ import networkx
 import MzEnigma
 
 class TagesschluesselRange(object):
- """Represents the Tagesschluessel of an Enigma
+ """Represents a range of Tagesschluessel and analysis methods working on them
  
 :param enigma: model of the Enigma (required)
 :param umkehrwalzenList: 'Umkehrwalze' (if undefined, randomly selected)
 :param walzenList: List of type 'Walze' (if undefined, randomly selecte(if undefined, randomly selected)
 :param tagesWalzenStellungenList: List of Tageswalzenstellungen (if undefined, all) 
+:param spruchScoring: 'SpruchScoring' (required by Gillolgy attack)
 :param zusatzwalzenList: 'Zusatzwalze' (if undefined, randomly selected)
 :param blank: replacement character for a blank
 :param notify: notification function (e.g. print)
@@ -79,9 +98,11 @@ class TagesschluesselRange(object):
  
  @classmethod
  def rejewskiAttack(cls, catalog : List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]], encodedSpruchSchluessel : str) -> List[Tuple[MzEnigma.Tagesschluessel, str]]:
-  """Find candidate spruchschluessels for an encrypted SpruchwalzenStellung
+  """Find candidate values for the unencoded SpruchSchluessel from a catalog
 
-:returns: list of tagesschluessel with the unencoded spruchSchluessel
+:param catalog: catalog of encoded spruchschluessels (required)
+:param encodedSpruchSchluessel: encoded spruchschluessels to be found (required)
+:returns: List[Tuple[Tagesschluessel, unencodedSpruchSchluessel]]
   """
   cls.checkRejewskiCatalog(catalog)
   firstKey, firstItem = catalog[0]
@@ -104,9 +125,10 @@ class TagesschluesselRange(object):
   return validCandidates
 
  def createRejewskiCatalog(self, pickleFile : Optional[str] = None) -> List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]]:
-  """Build up a catalog of spruchschluessels  
+  """Build up a catalog of encoded spruchschluessels. Works only without a steckerbrett. 
 
-:returns: a list of doublets for every tagesschluessel
+:param pickleFile: pickle file to be created (optional)
+:returns: List[Tuple[Tagesschluessel, List[List[Doublet]]]
   """
   assert self.enigma.steckerbrett is None, '{}.createRejewskiCatalog: engines with steckerbrett are not supported'.format(self.__class__.__name__)
   if pickleFile is not None:
@@ -144,6 +166,10 @@ class TagesschluesselRange(object):
   
  @classmethod
  def checkRejewskiCatalog(cls, catalog : List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]], expectedSpruchschluesselLength : Optional[int] = None) -> None:
+  """check a catalog of encoded spruchschluessels  
+
+:param expectedSpruchschluesselLength: number of characters in unencoded spruchschluessel (optional)
+  """
   assert len(catalog) > 0, '{}.checkRejewskiCatalog: empty catalog detected'.format(cls.__class__.__name__)  
   firstKey, firstItem = catalog[0]
   assert isinstance(firstKey, MzEnigma.Tagesschluessel), '{}.checkRejewskiCatalog: improper catalog key, MzEnigma.Tagesschluessel espected'.format(cls.__class__.__name__)
@@ -156,6 +182,10 @@ class TagesschluesselRange(object):
 
  @classmethod
  def loadRejewskiCatalog(cls, pickleFile : str) -> List[Tuple[MzEnigma.Tagesschluessel, List[List[str]]]]:
+  """Build up a catalog of encoded spruchschluessels  
+
+:returns: List[Tuple[Tagesschluessel, List[List[Doublet]]]
+  """
   pickleFile = os.path.normpath(pickleFile)
   assert os.path.isfile(pickleFile), '{}.loadRejewskiCatalog: pickle file {} is not or not a file'.format(cls.__class__.__name__, pickleFile)
   rejewskiList = pickle.load( open( pickleFile, "rb" ) )
@@ -163,8 +193,9 @@ class TagesschluesselRange(object):
   return rejewskiList
 
  def turingAttack(self, encodedSpruch : str = '', crib : str = '', startingPosition : int = 0) -> List[Tuple[MzEnigma.Tagesschluessel, List[Tuple[str, str]]]]:
-  """Turing attack to derive settings for Umkehrwalze, Walzen, Zusatzwalze, Tageswalzenstellungen and several settings of the Steckerbrett
+  """Turing attack to derive candidate settings for Umkehrwalze, Walzen, Zusatzwalze, Tageswalzenstellungen and several settings of the Steckerbrett
 An engine with Steckerbrett is required.
+The rate of correct Tagesschluessels increases with increasing length of the crib.
 
 :param encodedSpruch: encoded message to be attacked (required)
 :param crib: unencoded crib to be found in the message (required) 
@@ -282,10 +313,12 @@ An engine with Steckerbrett is required.
   return validCandidates
   
  def gilloglyAttackPhase1(self, encodedSpruch : str) -> MzEnigma.Tagesschluessel:
-  """Brute force attack to derive settings for Umkehrwalze, Walzen, Zusatzwalze, and Tageswalzenstellungen
+  """Brute force attack to derive settings for Umkehrwalze, Walzen, Zusatzwalze, and Tageswalzenstellungen.
+Uses the index of coincidence for scoring.
+The rate of correct Tagesschluessels increases with increasing length of the encodedSpruch.
  
 :param encodedSpruch: message to be attacked (required)
-:return: Tagesschlüssel
+:return: Tagesschlüssel 
   """
   def doScoring():
    nonlocal encodedSpruch, bestScore, tagesschluessel, bestTagesschluessel, lastDecryptedSpruch
@@ -333,6 +366,7 @@ An engine with Steckerbrett is required.
  def shotgunPhase2(self, 
    phase1Tagesschluessel : MzEnigma.Tagesschluessel, encodedSpruch : str = '', noImprovement : int = 10) -> MzEnigma.Tagesschluessel:
   """Shotgun hill climbing or simulated annealing attack to derive settings for Steckerbrett
+Uses the 'newNgramScore' for scoring.
  
 :param phase1Tagesschluessel: tagesschluessel with correct settings for Umkehrwalze, Walzen, Zusatzwalze, and Tageswalzenstellungen(required)
 :param encodedSpruch: encrypted message to be attacked (required)
@@ -469,6 +503,7 @@ An engine with Steckerbrett is required.
 
  def mzAttackPhase2(self, phase1Tagesschluessel : MzEnigma.Tagesschluessel, encodedSpruch : str = '') -> MzEnigma.Tagesschluessel:
   """Systematic hill climbing attack to derive settings for Steckerbrett
+Uses the 'ngramScore' for scoring.
  
 :param phase1Tagesschluessel: tagesschluessel with correct settings for Umkehrwalze, Walzen, Zusatzwalze, and Tageswalzenstellungen(required)
 :param encodedSpruch: encrypted message to be attacked (required)
