@@ -2,7 +2,7 @@
   "header": {
     "comment": "eric project file for project MzEnigma",
     "copyright": "Copyright (C) 2022 Reinhard M\u00e4rz, ",
-    "saved": "2022-03-23, 17:20:08"
+    "saved": "2022-03-24, 16:00:25"
   },
   "project": {
     "AUTHOR": "Reinhard M\u00e4rz",
@@ -87,7 +87,9 @@
       "setup.py",
       "license.gpl3",
       "MzEnigma/readme.rst",
-      "doc/predefined.rst"
+      "doc/predefined.rst",
+      ".readthedocs.yaml_",
+      "pyproject.toml"
     ],
     "SPELLEXCLUDES": "",
     "SPELLLANGUAGE": "en_US",

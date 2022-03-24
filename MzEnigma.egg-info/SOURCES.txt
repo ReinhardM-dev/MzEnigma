@@ -1,0 +1,16 @@
+license.gpl3
+pyproject.toml
+setup.py
+MzEnigma/__init__.py
+MzEnigma/analyzeEnigma.py
+MzEnigma/component.py
+MzEnigma/enigma.py
+MzEnigma/readme.rst
+MzEnigma.egg-info/PKG-INFO
+MzEnigma.egg-info/SOURCES.txt
+MzEnigma.egg-info/dependency_links.txt
+MzEnigma.egg-info/requires.txt
+MzEnigma.egg-info/top_level.txt
+test/test_analyzeEnigma.py
+test/test_components.py
+test/test_enigma.py

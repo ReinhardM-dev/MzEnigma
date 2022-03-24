@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: MzEnigma
+Version: 1.2.1
+Summary: A Simulator for Enigma operation and analysis
+Home-page: https://github.com/ReinhardM-dev/MzEnigma
+Author: Reinhard Maerz
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Development Status :: 4 - Beta
+Classifier: Natural Language :: English
+Classifier: Topic :: Security :: Cryptography
+Requires-Python: >=3.7
+Description-Content-Type: text/x-rst
+License-File: license.gpl3
+
+MzEnigma
+===========================
+A package implementing the operation of several enigma models (see `crytomuseum`_)
+and common methods (see `cryptool`_) for their analysis
+
+
+Installing
+----------
+
+The package is a pure python package.
+To work the package requires `networkx`_ for the manipulation of complex networks.
+
+Download the package using
+::
+
+    pip install mzEnigma
+
+.. _crytomuseum: https://www.cryptomuseum.com/crypto/enigma
+.. _cryptool: https://www.cryptool.org/en/documentation/ctbook/    
+.. _networkx: https://networkx.org/
+        
+
+
