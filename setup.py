@@ -14,8 +14,8 @@ sys.path.insert(0, fileDirectory)
 with open(os.path.join(packageDirectory,'readme.rst'), 'r', encoding = 'utf-8') as f:
  long_description = f.read()
  
-import MzChess
-pkgVersion = MzChess.__version__
+import MzEnigma
+pkgVersion = MzEnigma.__version__
 
 # Required to ensure a clean environment
 shutil.rmtree(os.path.join(fileDirectory, 'build'), ignore_errors = True)
@@ -23,6 +23,7 @@ shutil.rmtree(os.path.join(fileDirectory, 'build'), ignore_errors = True)
 # Need to add all dependencies to setup as we go!
 setup(name = package,
   url = 'https://github.com/ReinhardM-dev/MzEnigma', 
+  project_urls={ 'Documentation': 'https://reinhardm-dev.github.io/MzEnigma' }, 
   version = pkgVersion,
   packages = [package],
   options={'bdist_wheel':{'universal':True}},
@@ -32,7 +33,7 @@ setup(name = package,
   long_description_content_type="text/x-rst",
   author  ='Reinhard Maerz',
   python_requires = '>=3.7', 
-  install_requires = ['networkx>=2.7'],
+  install_requires = ['networkx>=2.5'],
   setup_requires=['wheel'], 
   classifiers = [
     'Programming Language :: Python', 

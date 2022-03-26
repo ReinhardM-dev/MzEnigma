@@ -6,7 +6,7 @@ if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
 set BUILDDIR=..\doc_build
-set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees -a %SPHINXOPTS% .
+set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees -a -E %SPHINXOPTS% .
 set I18NSPHINXOPTS=%SPHINXOPTS% .
 if NOT "%PAPER%" == "" (
 	set ALLSPHINXOPTS=-D latex_paper_size=%PAPER% %ALLSPHINXOPTS%
