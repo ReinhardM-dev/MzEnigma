@@ -1,6 +1,7 @@
 import sys
 import platform
-import winreg
+if platform.system() == 'Windows':
+ import winreg
 import os, os.path
 import pytest
 
