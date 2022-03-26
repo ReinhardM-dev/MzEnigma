@@ -17,6 +17,12 @@ with open(os.path.join(packageDirectory,'readme.rst'), 'r', encoding = 'utf-8') 
 import MzEnigma
 pkgVersion = MzEnigma.__version__
 
+pythonVersion = sys.version_info[0] + 0.1 * sys.version_info[1]
+if pythonVersion < 3.9:
+ networkx = 'networkx>=2.2'
+else:
+ networkx = 'networkx>=2.5'
+
 # Required to ensure a clean environment
 shutil.rmtree(os.path.join(fileDirectory, 'build'), ignore_errors = True)
 
@@ -33,7 +39,7 @@ setup(name = package,
   long_description_content_type="text/x-rst",
   author  ='Reinhard Maerz',
   python_requires = '>=3.7', 
-  install_requires = ['networkx>=2.5'],
+  install_requires = [ networkx ],
   setup_requires=['wheel'], 
   classifiers = [
     'Programming Language :: Python', 
