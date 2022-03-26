@@ -5,11 +5,11 @@ An Enigma simulator and analyser
 Versions:
  1.0.0      first version
  1.1.0      documentation established
- 1.1.1      setup corrected
+ 1.1.2      setup corrected
 """
 __author__ = "Reinhard Maerz"
 __date__ = "2022-03-26"
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 import os
 import sys
