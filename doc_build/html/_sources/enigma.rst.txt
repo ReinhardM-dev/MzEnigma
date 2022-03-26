@@ -1,7 +1,0 @@
-Enigma
-===========
-
-.. automodule:: enigma
-    :members:
- 
-
